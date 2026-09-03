@@ -33,7 +33,7 @@ func TestGeneratedQuestionsAgreeWithTheirPrompts(t *testing.T) {
 	// a wrong operator would show one sum and mark another. Re-derive the
 	// answer from the prompt and check they match.
 	r := games.NewTestRand(7)
-	for _, l := range Levels {
+	for _, l := range arithmeticLevels {
 		for i := 0; i < 300; i++ {
 			q := l.Gen(r)
 			want, err := evalPrompt(q.Prompt)
@@ -230,8 +230,11 @@ func TestCuratedLevelsAreWellFormed(t *testing.T) {
 		if l.MinAccuracy <= 0 || l.MinAccuracy > 1 {
 			t.Errorf("level %q has MinAccuracy %v", l.Title, l.MinAccuracy)
 		}
-		if l.Gen == nil {
+		if l.Gen == nil && l.GenSteps == nil {
 			t.Errorf("level %q has no generator", l.Title)
+		}
+		if l.Gen != nil && l.GenSteps != nil {
+			t.Errorf("level %q has both a Gen and a GenSteps", l.Title)
 		}
 	}
 }

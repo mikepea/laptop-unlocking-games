@@ -30,9 +30,19 @@ type round struct {
 }
 
 func newRound(l Level, r *rand.Rand) *round {
-	qs := make([]Question, l.Questions)
-	for i := range qs {
-		qs[i] = l.Gen(r)
+	var qs []Question
+	if l.GenSteps != nil {
+		// Whole problems only. Stopping halfway through the working would
+		// leave an expression collected but never factorised, so a round runs
+		// slightly over Questions rather than cut one short.
+		for len(qs) < l.Questions {
+			qs = append(qs, l.GenSteps(r)...)
+		}
+	} else {
+		qs = make([]Question, l.Questions)
+		for i := range qs {
+			qs[i] = l.Gen(r)
+		}
 	}
 	return &round{level: l, questions: qs, now: time.Now}
 }

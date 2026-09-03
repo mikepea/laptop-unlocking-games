@@ -11,7 +11,7 @@ Steam on it. Everything above the first rung is hidden until it is reached.
 | game | opens at | teaches |
 | ---- | -------- | ------- |
 | **Typing Trainer** | free | home row through full sentences, with live WPM and accuracy |
-| **Maths Sprint** | 250 | addition, subtraction, times tables and division against the clock |
+| **Maths Sprint** | 250 | addition, subtraction, times tables and division, then algebra: solving for x, substitution, collecting and factorising |
 | **Spelling Bee** | 550 | a word appears, vanishes, and has to be written from memory |
 | **Code Breaker** | 900 | deduction: crack a hidden code from exact/near feedback |
 | **Shell Quest** | 2000 | `ls`, `cd`, `cat`, `pwd` and hidden files, in a pretend filesystem |

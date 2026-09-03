@@ -228,6 +228,16 @@ func (m *model) viewSelect() string {
 	return b.String()
 }
 
+// askJoin is what sits between a question and its answer. "7 x 8" wants an
+// equals sign; "How many x altogether?" is already a sentence and reads badly
+// with one.
+func askJoin(q Question) string {
+	if strings.HasSuffix(q.Prompt, "?") {
+		return " "
+	}
+	return ui.Dim.Render("=")
+}
+
 // header is the line every in-round screen starts with.
 func (m *model) header() string {
 	return ui.Title.Render(m.rd.level.Title) +
@@ -255,12 +265,14 @@ func (m *model) viewPlay() string {
 	b.WriteString(ui.Subtitle.Render(m.rd.level.Hint))
 	b.WriteString("\n\n\n")
 
+	q := m.rd.current()
+	if q.Context != "" {
+		fmt.Fprintf(&b, "      %s\n\n", ui.Muted.Render(q.Context))
+	}
+
 	// No padding after the field: an answer can be one digit or three, and a
 	// row of dots would suggest there are more to type.
-	fmt.Fprintf(&b, "      %s %s %s\n",
-		ui.Selected.Render(m.rd.current().Prompt),
-		ui.Dim.Render("="),
-		m.field.Render(0))
+	fmt.Fprintf(&b, "      %s %s %s\n", ui.Selected.Render(q.Prompt), askJoin(q), m.field.Render(0))
 
 	b.WriteString("\n\n")
 	b.WriteString(m.scoreLine())
@@ -275,9 +287,12 @@ func (m *model) viewCorrection() string {
 	b.WriteString(ui.Subtitle.Render(m.rd.level.Hint))
 	b.WriteString("\n\n\n")
 
+	if m.missedQ.Context != "" {
+		fmt.Fprintf(&b, "      %s\n\n", ui.Muted.Render(m.missedQ.Context))
+	}
 	fmt.Fprintf(&b, "      %s %s %s\n",
 		ui.Bad.Render(m.missedQ.Prompt),
-		ui.Dim.Render("="),
+		askJoin(m.missedQ),
 		ui.Good.Render(fmt.Sprintf("%d", m.missedQ.Answer)))
 	b.WriteString("\n")
 	b.WriteString(ui.Muted.Render("      Not quite. Have a look at that one."))
