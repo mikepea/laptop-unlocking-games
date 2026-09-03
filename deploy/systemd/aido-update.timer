@@ -1,0 +1,15 @@
+# Check for updates a few minutes after boot, then daily.
+#
+# Persistent=true so a laptop that is off for a week still checks once when it
+# next comes back, rather than silently skipping every missed window.
+[Unit]
+Description=Daily aido update check
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=24h
+RandomizedDelaySec=30min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

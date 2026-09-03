@@ -1,0 +1,78 @@
+# aido
+
+A laptop that opens up as it is earned.
+
+It boots to a TTY running one Go binary — a typing trainer. Playing earns
+points, points unlock rungs of a ladder, and the ladder ends at a desktop with
+Steam on it. Everything above the first rung is hidden until it is reached.
+
+This is the first slice: the launcher, the typing game, the points and
+achievement model, and the update mechanism that will deliver every game after
+this one.
+
+## Quick start
+
+```sh
+make run          # build and play
+make check        # fmt, vet, test
+make dist         # cross-compile for the laptop (linux/amd64)
+make release      # dist/ plus an update manifest
+```
+
+Go 1.26.5, pinned in `.tool-versions`.
+
+## Commands
+
+```
+aido            start the launcher
+aido version    print build identity
+aido update     check for a newer build; -apply installs it
+aido profile    show where progress is stored, and a summary
+```
+
+Useful flags and their environment equivalents:
+
+| flag             | env                  | meaning                                            |
+| ---------------- | -------------------- | -------------------------------------------------- |
+| `-profile`       | `AIDO_PROFILE`       | where progress lives, default `$XDG_DATA_HOME/aido` |
+| `-name`          | `AIDO_PLAYER`        | player name, used on a first run                    |
+| `-manifest-url`  | `AIDO_MANIFEST_URL`  | release manifest; empty disables update checks      |
+
+## Layout
+
+```
+cmd/aido            the binary: flag parsing and wiring
+internal/launcher   the root Bubble Tea model — menu, results, progress
+internal/games      the Game contract and registry
+internal/games/typing   the typing trainer
+internal/profile    persistent progress, one JSON file, written atomically
+internal/unlocks    the ladder from typing trainer to Steam
+internal/achievements   badge definitions and rules
+internal/points     the points ledger, with TaskBank stubbed behind an interface
+internal/update     manifest fetch, checksum verification, in-place replace
+internal/ui         shared Lip Gloss styles
+deploy/             systemd units and the install script for the Arch box
+```
+
+## On the laptop
+
+Target is Arch on x86_64. From a checkout on the machine:
+
+```sh
+make dist
+sudo AIDO_MANIFEST_URL=https://.../manifest.json ./deploy/install.sh
+```
+
+That creates an unprivileged `aido` account, autologs it in on tty1, launches
+the game as its login shell, and enables a daily update timer. tty2 is left
+alone so there is still a way in.
+
+See [docs/architecture.md](docs/architecture.md) for how the pieces fit and how
+to add the next game.
+
+## Where this is going
+
+- More games, each one gated behind a rung of the ladder.
+- TaskBank as the real points ledger, so chores and typing feed the same number.
+- The upper rungs — shell, editor, browser, desktop, Steam — provisioned by the
+  unlock rather than just described by it.

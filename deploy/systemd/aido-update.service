@@ -1,0 +1,25 @@
+# Pull a newer aido if one has been published.
+#
+# Runs as root because the binary lives in /usr/local/bin. The running process
+# keeps its own inode on Linux, so replacing the file under a game in progress
+# is safe: the new build takes over the next time the launcher restarts.
+[Unit]
+Description=Check for and install aido updates
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/aido/aido.env
+ExecStart=/usr/local/bin/aido update -apply -target /usr/local/bin/aido
+
+# A failed check must never be loud. The laptop is offline more often than not,
+# and a red unit on boot is not something to explain to a nine-year-old.
+SuccessExitStatus=0 1
+
+# It only needs the network and one directory.
+ProtectSystem=strict
+ReadWritePaths=/usr/local/bin
+ProtectHome=yes
+PrivateTmp=yes
+NoNewPrivileges=yes
