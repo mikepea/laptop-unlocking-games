@@ -12,7 +12,7 @@ Steam on it. Everything above the first rung is hidden until it is reached.
 | ---- | -------- | ------- |
 | **Typing Trainer** | free | home row through full sentences, with live WPM and accuracy |
 | **Maths Sprint** | 250 | addition, subtraction, times tables and division, then algebra: solving for x, substitution, collecting and factorising |
-| **Spelling Bee** | 550 | a word appears, vanishes, and has to be written from memory |
+| **Spelling Bee** | 550 | a sentence appears with one word picked out, both vanish, and the word has to be written from memory |
 | **Code Breaker** | 900 | deduction: crack a hidden code from exact/near feedback |
 | **Trace the Code** | 1150 | read a short program and say what it prints: variables, reassignment, loops, if |
 | **Shell Quest** | 2000 | `ls`, `cd`, `cat`, `pwd` and hidden files, in a pretend filesystem |

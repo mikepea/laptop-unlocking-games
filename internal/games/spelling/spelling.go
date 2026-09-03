@@ -168,7 +168,7 @@ func (m *model) updateType(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		if m.field.Empty() {
 			return m, nil
 		}
-		want := m.rd.current()
+		want := m.rd.current().Text
 		got := m.field.Value()
 		if m.rd.submit(got) {
 			m.streak++
@@ -290,6 +290,57 @@ func (m *model) scoreLine() string {
 	return line
 }
 
+// wordSpan finds where the word sits inside its sentence, as a whole word.
+//
+// Matching is case-insensitive, because a sentence may open with the word, and
+// the span is returned rather than the text so the original casing survives --
+// "Suddenly" should not be shown lowercased just because the pool lists it
+// that way. Whole-word matching matters: a plain substring search for "own"
+// would light up the middle of "town".
+func wordSpan(sentence, word string) (start, end int, ok bool) {
+	if word == "" {
+		return 0, 0, false
+	}
+	lowerS, lowerW := strings.ToLower(sentence), strings.ToLower(word)
+	for at := 0; ; {
+		i := strings.Index(lowerS[at:], lowerW)
+		if i < 0 {
+			return 0, 0, false
+		}
+		i += at
+		j := i + len(word)
+		if !isWordChar(lowerS, i-1) && !isWordChar(lowerS, j) {
+			return i, j, true
+		}
+		at = i + 1
+	}
+}
+
+// isWordChar reports whether the byte at i is part of a word, treating any
+// position off either end as not.
+func isWordChar(s string, i int) bool {
+	if i < 0 || i >= len(s) {
+		return false
+	}
+	c := s[i]
+	return c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == '\''
+}
+
+// spotlight renders the sentence with the word being asked for picked out in
+// yellow.
+func spotlight(w Word) string {
+	start, end, ok := wordSpan(w.Sentence, w.Text)
+	if !ok {
+		// A sentence that has drifted from its word. Show the word on its own
+		// rather than a sentence with nothing lit up in it: a test keeps this
+		// from happening, but a round should not break if one slips through.
+		return ui.Spotlight.Render(w.Text)
+	}
+	return ui.Muted.Render(w.Sentence[:start]) +
+		ui.Spotlight.Render(w.Sentence[start:end]) +
+		ui.Muted.Render(w.Sentence[end:])
+}
+
 func (m *model) viewShow() string {
 	var b strings.Builder
 	b.WriteString(m.header())
@@ -297,7 +348,7 @@ func (m *model) viewShow() string {
 	b.WriteString(ui.Subtitle.Render("Look at it. Really look at it."))
 	b.WriteString("\n\n\n")
 
-	fmt.Fprintf(&b, "      %s\n\n", ui.Selected.Render(m.rd.current()))
+	fmt.Fprintf(&b, "      %s\n\n", spotlight(m.rd.current()))
 
 	// The bar drains rather than fills: it is time running out, not progress.
 	remaining := time.Until(m.hideAt)

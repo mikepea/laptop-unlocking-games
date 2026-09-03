@@ -14,7 +14,14 @@ func testLevel() Level {
 		Count:         4,
 		MinAccuracy:   0.75,
 		ShowForMillis: 1000,
-		Words:         []string{"alpha", "bravo", "charlie", "delta", "echo", "foxtrot"},
+		Words: []Word{
+			{"alpha", "The alpha wolf led the pack."},
+			{"bravo", "The crowd shouted bravo at the end."},
+			{"charlie", "We called the puppy charlie."},
+			{"delta", "The river spreads out into a delta."},
+			{"echo", "Her voice came back as an echo."},
+			{"foxtrot", "They danced a slow foxtrot."},
+		},
 	}
 }
 
@@ -27,15 +34,15 @@ func TestRoundDrawsDistinctWordsFromThePool(t *testing.T) {
 	seen := map[string]bool{}
 	pool := map[string]bool{}
 	for _, w := range testLevel().Words {
-		pool[w] = true
+		pool[w.Text] = true
 	}
 	for _, w := range rd.words {
-		if seen[w] {
-			t.Errorf("word %q drawn twice in one round", w)
+		if seen[w.Text] {
+			t.Errorf("word %q drawn twice in one round", w.Text)
 		}
-		seen[w] = true
-		if !pool[w] {
-			t.Errorf("word %q is not in the level's pool", w)
+		seen[w.Text] = true
+		if !pool[w.Text] {
+			t.Errorf("word %q is not in the level's pool", w.Text)
 		}
 	}
 }
@@ -52,7 +59,7 @@ func TestRoundHandlesAPoolSmallerThanTheCount(t *testing.T) {
 
 func TestSubmitIgnoresCaseAndSurroundingSpace(t *testing.T) {
 	rd := newRound(testLevel(), games.NewTestRand(3))
-	want := rd.current()
+	want := rd.current().Text
 
 	if !rd.submit("  " + strings.ToUpper(want) + "  ") {
 		t.Fatalf("%q in capitals with spaces was graded wrong", want)
@@ -64,7 +71,7 @@ func TestSubmitIgnoresCaseAndSurroundingSpace(t *testing.T) {
 
 func TestSubmitRecordsWhatWasWritten(t *testing.T) {
 	rd := newRound(testLevel(), games.NewTestRand(3))
-	want := rd.current()
+	want := rd.current().Text
 
 	if rd.submit("definitelywrong") {
 		t.Fatal("a wrong spelling was graded correct")
@@ -95,7 +102,7 @@ func TestNotesSayWhenAnAnswerWasBlank(t *testing.T) {
 func TestRoundFinishesAndGradesPass(t *testing.T) {
 	rd := newRound(testLevel(), games.NewTestRand(3))
 	for !rd.done {
-		rd.submit(rd.current())
+		rd.submit(rd.current().Text)
 	}
 	if !rd.passed() {
 		t.Fatalf("a perfect round did not pass (accuracy %v)", rd.accuracy())
@@ -108,7 +115,7 @@ func TestRoundFinishesAndGradesPass(t *testing.T) {
 	sloppy := newRound(testLevel(), games.NewTestRand(3))
 	for i := 0; !sloppy.done; i++ {
 		if i%2 == 0 {
-			sloppy.submit(sloppy.current())
+			sloppy.submit(sloppy.current().Text)
 			continue
 		}
 		sloppy.submit("wrong")
@@ -120,17 +127,17 @@ func TestRoundFinishesAndGradesPass(t *testing.T) {
 
 func TestShowForGrowsWithWordLength(t *testing.T) {
 	l := testLevel()
-	l.Words = []string{"cat"}
+	l.Words = []Word{{"cat", "The cat sat on the wall."}}
 	l.Count = 1
 	short := newRound(l, games.NewTestRand(3))
 
-	l.Words = []string{"extraordinary"}
+	l.Words = []Word{{"extraordinary", "It was an extraordinary sight."}}
 	long := newRound(l, games.NewTestRand(3))
 
 	if !(long.showFor() > short.showFor()) {
 		t.Fatalf("long word shows for %v, short for %v; want longer", long.showFor(), short.showFor())
 	}
-	if short.showFor() != time.Duration(l.ShowForMillis)*time.Millisecond {
+	if short.showFor() != time.Duration(l.ShowForMillis)*time.Millisecond+sentenceExtra {
 		t.Fatalf("a short word got %v, want the level's base of %dms", short.showFor(), l.ShowForMillis)
 	}
 }
@@ -175,16 +182,16 @@ func TestCuratedLevelsAreWellFormed(t *testing.T) {
 
 		seen := map[string]bool{}
 		for _, w := range l.Words {
-			if seen[w] {
-				t.Errorf("level %q lists %q twice", l.Title, w)
+			if seen[w.Text] {
+				t.Errorf("level %q lists %q twice", l.Title, w.Text)
 			}
-			seen[w] = true
+			seen[w.Text] = true
 
 			// Every word has to be typeable with the letters-only field, or it
 			// cannot be answered however well it is spelled.
-			for _, r := range w {
+			for _, r := range w.Text {
 				if !isTypeable(r) {
-					t.Errorf("level %q word %q contains %q, which the answer field rejects", l.Title, w, r)
+					t.Errorf("level %q word %q contains %q, which the answer field rejects", l.Title, w.Text, r)
 				}
 			}
 		}
@@ -210,7 +217,7 @@ func TestCurrentIsStableOnceTheRoundIsOver(t *testing.T) {
 	last := rd.words[len(rd.words)-1]
 
 	for !rd.done {
-		rd.submit(rd.current())
+		rd.submit(rd.current().Text)
 	}
 	if rd.idx != len(rd.words) {
 		t.Fatalf("idx = %d, want %d", rd.idx, len(rd.words))
@@ -220,4 +227,53 @@ func TestCurrentIsStableOnceTheRoundIsOver(t *testing.T) {
 	}
 	// showFor also calls current(); it must not panic either.
 	_ = rd.showFor()
+}
+
+// The sentence is the whole point of the change: without it "Sound Alikes" is
+// unanswerable, since "weight" and "wait" look identical when shown alone. A
+// sentence that has drifted from its word would light up nothing, so check
+// every one of them.
+func TestEveryWordAppearsInItsOwnSentence(t *testing.T) {
+	for _, l := range Levels {
+		for _, w := range l.Words {
+			start, end, ok := wordSpan(w.Sentence, w.Text)
+			if !ok {
+				t.Errorf("level %q: %q does not appear as a whole word in %q",
+					l.Title, w.Text, w.Sentence)
+				continue
+			}
+			if got := strings.ToLower(w.Sentence[start:end]); got != strings.ToLower(w.Text) {
+				t.Errorf("level %q: highlight for %q lands on %q in %q",
+					l.Title, w.Text, w.Sentence, got)
+			}
+		}
+	}
+}
+
+func TestEverySentenceIsPresentAndReadable(t *testing.T) {
+	for _, l := range Levels {
+		for _, w := range l.Words {
+			if w.Sentence == "" {
+				t.Errorf("level %q: %q has no sentence", l.Title, w.Text)
+			}
+			// The sentence is shown on one line inside the frame.
+			if len(w.Sentence) > 60 {
+				t.Errorf("level %q: sentence for %q is %d chars: %q",
+					l.Title, w.Text, len(w.Sentence), w.Sentence)
+			}
+		}
+	}
+}
+
+func TestWordSpanMatchesWholeWordsOnly(t *testing.T) {
+	if _, _, ok := wordSpan("The town was quiet.", "own"); ok {
+		t.Error(`"own" matched inside "town"`)
+	}
+	start, end, ok := wordSpan("Suddenly the lights went out.", "suddenly")
+	if !ok || start != 0 || end != len("Suddenly") {
+		t.Errorf("span = %d,%d,%v; want the leading capitalised word", start, end, ok)
+	}
+	if _, _, ok := wordSpan("Nothing to find here.", "absent"); ok {
+		t.Error("a missing word reported a span")
+	}
 }

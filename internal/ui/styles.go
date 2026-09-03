@@ -14,6 +14,7 @@ var (
 	ColorMuted   = lipgloss.Color("245") // grey
 	ColorDim     = lipgloss.Color("240") // darker grey
 	ColorGold    = lipgloss.Color("220") // achievements
+	ColorSpot    = lipgloss.Color("226") // yellow, for picking a word out of a line
 	ColorInverse = lipgloss.Color("236") // cursor background
 )
 
@@ -32,6 +33,10 @@ var (
 	Bad   = lipgloss.NewStyle().Foreground(ColorBad)
 	Warn  = lipgloss.NewStyle().Foreground(ColorWarn)
 	Gold  = lipgloss.NewStyle().Foreground(ColorGold).Bold(true)
+
+	// Spotlight picks one word out of a line of ordinary text. Deliberately
+	// not Warn or Gold: this is neither a problem nor a reward.
+	Spotlight = lipgloss.NewStyle().Foreground(ColorSpot).Bold(true)
 
 	// Typed returns text the player got right.
 	Typed = lipgloss.NewStyle().Foreground(ColorGood)

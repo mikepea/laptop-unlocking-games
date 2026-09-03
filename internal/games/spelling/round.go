@@ -17,7 +17,7 @@ type missedWord struct {
 // round is the scoring core: which words, what was typed, and how long it took.
 type round struct {
 	level Level
-	words []string
+	words []Word
 
 	idx     int
 	correct int
@@ -33,7 +33,7 @@ type round struct {
 
 // newRound draws Count distinct words from the level's pool.
 func newRound(l Level, r *rand.Rand) *round {
-	pool := make([]string, len(l.Words))
+	pool := make([]Word, len(l.Words))
 	copy(pool, l.Words)
 	r.Shuffle(len(pool), func(i, j int) { pool[i], pool[j] = pool[j], pool[i] })
 
@@ -52,9 +52,9 @@ func newRound(l Level, r *rand.Rand) *round {
 // broke exactly that way in the maths game (a finished round still gets
 // rendered once before the launcher swaps the model out). Clamp rather than
 // panic.
-func (rd *round) current() string {
+func (rd *round) current() Word {
 	if len(rd.words) == 0 {
-		return ""
+		return Word{}
 	}
 	if rd.idx >= len(rd.words) {
 		return rd.words[len(rd.words)-1]
@@ -62,12 +62,19 @@ func (rd *round) current() string {
 	return rd.words[rd.idx]
 }
 
+// sentenceExtra is the reading time added now that a word arrives inside a
+// sentence rather than on its own.
+const sentenceExtra = 2 * time.Second
+
 // showFor is how long the current word stays visible. Longer words get a
 // little longer to read, because the challenge is spelling them, not glimpsing
 // them.
 func (rd *round) showFor() time.Duration {
-	base := time.Duration(rd.level.ShowForMillis) * time.Millisecond
-	if extra := len(rd.current()) - 6; extra > 0 {
+	// The level's own time is what a bare word needed. There is a whole
+	// sentence to read before the word can even be found in it now, so
+	// everything gets that time back and a little over.
+	base := time.Duration(rd.level.ShowForMillis)*time.Millisecond + sentenceExtra
+	if extra := len(rd.current().Text) - 6; extra > 0 {
 		base += time.Duration(extra) * 150 * time.Millisecond
 	}
 	return base
@@ -90,11 +97,11 @@ func (rd *round) submit(answer string) bool {
 
 	want := rd.current()
 	got := strings.TrimSpace(answer)
-	ok := strings.EqualFold(got, want)
+	ok := strings.EqualFold(got, want.Text)
 	if ok {
 		rd.correct++
 	} else {
-		rd.missed = append(rd.missed, missedWord{Want: want, Got: got})
+		rd.missed = append(rd.missed, missedWord{Want: want.Text, Got: got})
 	}
 
 	rd.idx++
