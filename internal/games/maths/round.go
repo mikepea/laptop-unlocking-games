@@ -38,7 +38,20 @@ func newRound(l Level, r *rand.Rand) *round {
 }
 
 // current is the question being asked.
-func (rd *round) current() Question { return rd.questions[rd.idx] }
+//
+// After the final answer idx is one past the end. Bubble Tea renders the model
+// it was handed back before the FinishedMsg from games.Finish is delivered and
+// the launcher swaps this model out, so View always runs at least once on a
+// finished round. Return the last question rather than panicking.
+func (rd *round) current() Question {
+	if len(rd.questions) == 0 {
+		return Question{}
+	}
+	if rd.idx >= len(rd.questions) {
+		return rd.questions[len(rd.questions)-1]
+	}
+	return rd.questions[rd.idx]
+}
 
 // start marks the clock as running. It is called on the first keystroke rather
 // than when the level opens, so reading the first question costs nothing.

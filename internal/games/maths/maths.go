@@ -150,10 +150,13 @@ func (m *model) updateCorrection(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, games.Finish(m.result())
 	case tea.KeyEnter, tea.KeySpace:
 		m.field.Clear()
-		m.mode = modePlay
+		// Test done BEFORE going back to play: getting the last question wrong
+		// ends the round, and modePlay would render a question that is no
+		// longer there.
 		if m.rd.done {
 			return m, games.Finish(m.result())
 		}
+		m.mode = modePlay
 	}
 	return m, nil
 }
