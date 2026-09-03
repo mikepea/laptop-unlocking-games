@@ -201,3 +201,23 @@ func isTypeable(r rune) bool {
 	}
 	return false
 }
+
+// A finished round is still rendered once before the launcher swaps the model
+// out, so current() must stay in bounds past the last word rather than
+// panicking. This is the bug that hit the maths game.
+func TestCurrentIsStableOnceTheRoundIsOver(t *testing.T) {
+	rd := newRound(testLevel(), games.NewTestRand(3))
+	last := rd.words[len(rd.words)-1]
+
+	for !rd.done {
+		rd.submit(rd.current())
+	}
+	if rd.idx != len(rd.words) {
+		t.Fatalf("idx = %d, want %d", rd.idx, len(rd.words))
+	}
+	if got := rd.current(); got != last {
+		t.Errorf("current() after finishing = %q, want the last word %q", got, last)
+	}
+	// showFor also calls current(); it must not panic either.
+	_ = rd.showFor()
+}

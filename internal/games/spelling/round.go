@@ -45,7 +45,22 @@ func newRound(l Level, r *rand.Rand) *round {
 }
 
 // current is the word being asked.
-func (rd *round) current() string { return rd.words[rd.idx] }
+//
+// After the final answer idx is one past the end. Nothing reaches this in that
+// state today -- viewShow is the only caller and reveal() cannot run once the
+// round is done -- but that is an invariant one reordering could break, and it
+// broke exactly that way in the maths game (a finished round still gets
+// rendered once before the launcher swaps the model out). Clamp rather than
+// panic.
+func (rd *round) current() string {
+	if len(rd.words) == 0 {
+		return ""
+	}
+	if rd.idx >= len(rd.words) {
+		return rd.words[len(rd.words)-1]
+	}
+	return rd.words[rd.idx]
+}
 
 // showFor is how long the current word stays visible. Longer words get a
 // little longer to read, because the challenge is spelling them, not glimpsing
