@@ -43,6 +43,12 @@ var Ladder = []Stage{
 		Cost:  900,
 	},
 	{
+		ID:    "pseudocode",
+		Title: "Trace the Code",
+		Blurb: "Programs to read. Work out what they print before they tell you.",
+		Cost:  1150,
+	},
+	{
 		ID:    "files",
 		Title: "Your Own Files",
 		Blurb: "A place to keep things, and a way to look around it.",

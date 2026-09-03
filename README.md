@@ -14,10 +14,17 @@ Steam on it. Everything above the first rung is hidden until it is reached.
 | **Maths Sprint** | 250 | addition, subtraction, times tables and division, then algebra: solving for x, substitution, collecting and factorising |
 | **Spelling Bee** | 550 | a word appears, vanishes, and has to be written from memory |
 | **Code Breaker** | 900 | deduction: crack a hidden code from exact/near feedback |
+| **Trace the Code** | 1150 | read a short program and say what it prints: variables, reassignment, loops, if |
 | **Shell Quest** | 2000 | `ls`, `cd`, `cat`, `pwd` and hidden files, in a pretend filesystem |
 
 Shell Quest sits directly below the **shell** rung on purpose: by the time the
 real prompt is handed over, the commands should already be familiar.
+
+Trace the Code picks up where Maths Sprint's algebra leaves off. "Putting
+Numbers In" asks what `3x + 2` is when x is 4; Trace the Code asks the same
+thing with the working written down a line at a time, then goes where algebra
+cannot follow — a box whose contents change (`x = x + 2` is false in algebra
+and ordinary in code), a line that runs four times, a line that never runs.
 
 ## Quick start
 

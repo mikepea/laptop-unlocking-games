@@ -9,6 +9,7 @@ import (
 	"github.com/mikepea/laptop-unlocking-games/internal/games"
 	"github.com/mikepea/laptop-unlocking-games/internal/games/codebreaker"
 	"github.com/mikepea/laptop-unlocking-games/internal/games/maths"
+	"github.com/mikepea/laptop-unlocking-games/internal/games/pseudocode"
 	"github.com/mikepea/laptop-unlocking-games/internal/games/shellquest"
 	"github.com/mikepea/laptop-unlocking-games/internal/games/spelling"
 	"github.com/mikepea/laptop-unlocking-games/internal/games/typing"
@@ -22,6 +23,7 @@ func Registry() *games.Registry {
 		maths.New(),
 		spelling.New(),
 		codebreaker.New(),
+		pseudocode.New(),
 		shellquest.New(),
 	)
 }
