@@ -35,14 +35,16 @@ func TestReached(t *testing.T) {
 		t.Fatalf("next = %q, want arcade", next.ID)
 	}
 
-	// Exactly the cost of a stage is enough to reach it.
+	// Exactly the cost of a stage is enough to reach it. Asserted against the
+	// ladder's own order rather than a hardcoded name, so inserting a rung is
+	// not a test failure.
 	arcade, _ := ByID("arcade")
 	reached, next, _ = Reached(arcade.Cost)
 	if len(reached) != 2 {
 		t.Fatalf("at %d points, reached = %v, want typing and arcade", arcade.Cost, ids(reached))
 	}
-	if next.ID != "files" {
-		t.Fatalf("next = %q, want files", next.ID)
+	if want := Ladder[2].ID; next.ID != want {
+		t.Fatalf("next = %q, want %q", next.ID, want)
 	}
 
 	// Past the top of the ladder.

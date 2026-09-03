@@ -18,8 +18,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/mikepea/laptop-unlocking-games/internal/games"
-	"github.com/mikepea/laptop-unlocking-games/internal/games/typing"
+	"github.com/mikepea/laptop-unlocking-games/internal/catalog"
 	"github.com/mikepea/laptop-unlocking-games/internal/launcher"
 	"github.com/mikepea/laptop-unlocking-games/internal/points"
 	"github.com/mikepea/laptop-unlocking-games/internal/profile"
@@ -115,12 +114,10 @@ func runPlay(args []string) error {
 		return err
 	}
 
-	registry := games.NewRegistry(typing.New())
-
 	model := launcher.New(launcher.Options{
 		Store:   store,
 		Profile: prof,
-		Games:   registry,
+		Games:   catalog.Registry(),
 		Ledger:  points.NewLocal(prof),
 		Checker: &update.Checker{ManifestURL: cfg.manifestURL, Current: version.Version},
 	})

@@ -404,10 +404,23 @@ func (m *Model) viewResults() string {
 	row := func(k, v string) {
 		b.WriteString(fmt.Sprintf("  %s %s\n", ui.Dim.Render(fmt.Sprintf("%-10s", k)), v))
 	}
-	row("words/min", ui.Selected.Render(fmt.Sprintf("%.0f", r.WPM)))
+	// Not every game measures typing speed; a maths round showing 0 wpm would
+	// just be a number that means nothing.
+	if r.WPM > 0 {
+		row("words/min", ui.Selected.Render(fmt.Sprintf("%.0f", r.WPM)))
+	}
 	row("accuracy", ui.Selected.Render(fmt.Sprintf("%.0f%%", r.Accuracy*100)))
 	row("time", ui.Selected.Render(r.Duration.Round(time.Second).String()))
 	row("points", ui.Gold.Render(fmt.Sprintf("+%d", r.Points)))
+
+	if len(r.Notes) > 0 {
+		b.WriteString("\n")
+		b.WriteString(ui.Warn.Render("  Worth another look"))
+		b.WriteString("\n")
+		for _, n := range r.Notes {
+			b.WriteString(fmt.Sprintf("  %s %s\n", ui.Dim.Render("-"), n))
+		}
+	}
 
 	if len(m.lastEarned) > 0 {
 		b.WriteString("\n")

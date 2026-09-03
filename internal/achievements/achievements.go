@@ -7,6 +7,10 @@ package achievements
 
 import (
 	"github.com/mikepea/laptop-unlocking-games/internal/games"
+	"github.com/mikepea/laptop-unlocking-games/internal/games/codebreaker"
+	"github.com/mikepea/laptop-unlocking-games/internal/games/maths"
+	"github.com/mikepea/laptop-unlocking-games/internal/games/shellquest"
+	"github.com/mikepea/laptop-unlocking-games/internal/games/spelling"
 	"github.com/mikepea/laptop-unlocking-games/internal/games/typing"
 	"github.com/mikepea/laptop-unlocking-games/internal/profile"
 )
@@ -29,13 +33,15 @@ var All = []Achievement{
 		Title:       "First Steps",
 		Description: "Pass your first typing lesson.",
 		Check: func(p *profile.Profile, r games.Result) bool {
-			return r.Completed
+			// Scoped to typing: this badge is about the very first thing the
+			// laptop ever asks of you, not about passing any round anywhere.
+			return r.Completed && r.GameID == typing.GameID
 		},
 	},
 	{
 		ID:          "flawless",
 		Title:       "Flawless",
-		Description: "Finish a lesson without a single mistake.",
+		Description: "Finish a round without a single mistake.",
 		Check: func(p *profile.Profile, r games.Result) bool {
 			return r.Completed && r.Accuracy >= 1
 		},
@@ -102,6 +108,120 @@ var All = []Achievement{
 		Description: "Earn a thousand points.",
 		Check: func(p *profile.Profile, r games.Result) bool {
 			return p.PointsEarned >= 1000
+		},
+	},
+
+	// Maths Sprint.
+	{
+		ID:          "sums",
+		Title:       "Sums",
+		Description: "Pass your first maths level.",
+		Check: func(p *profile.Profile, r games.Result) bool {
+			return r.Completed && r.GameID == maths.GameID
+		},
+	},
+	{
+		ID:          "hard-tables",
+		Title:       "The Hard Ones",
+		Description: "Pass the sevens, eights and nines.",
+		Check: func(p *profile.Profile, r games.Result) bool {
+			return r.Completed && r.GameID == maths.GameID && r.Round == "Sevens, Eights and Nines"
+		},
+	},
+	{
+		ID:          "mathematician",
+		Title:       "Mathematician",
+		Description: "Pass every maths level.",
+		Check: func(p *profile.Profile, r games.Result) bool {
+			return p.Stats(maths.GameID).LessonsCleared >= len(maths.Levels)
+		},
+	},
+
+	// Spelling Bee.
+	{
+		ID:          "speller",
+		Title:       "Speller",
+		Description: "Pass your first spelling level.",
+		Check: func(p *profile.Profile, r games.Result) bool {
+			return r.Completed && r.GameID == spelling.GameID
+		},
+	},
+	{
+		ID:          "silent-letters",
+		Title:       "Heard It Anyway",
+		Description: "Pass the silent letters.",
+		Check: func(p *profile.Profile, r games.Result) bool {
+			return r.Completed && r.GameID == spelling.GameID && r.Round == "Silent Letters"
+		},
+	},
+	{
+		ID:          "wordsmith",
+		Title:       "Wordsmith",
+		Description: "Pass every spelling level.",
+		Check: func(p *profile.Profile, r games.Result) bool {
+			return p.Stats(spelling.GameID).LessonsCleared >= len(spelling.Levels)
+		},
+	},
+
+	// Code Breaker.
+	{
+		ID:          "codebreaker",
+		Title:       "Code Breaker",
+		Description: "Crack your first code.",
+		Check: func(p *profile.Profile, r games.Result) bool {
+			return r.Completed && r.GameID == codebreaker.GameID
+		},
+	},
+	{
+		ID:          "cryptanalyst",
+		Title:       "Cryptanalyst",
+		Description: "Crack every code breaker level.",
+		Check: func(p *profile.Profile, r games.Result) bool {
+			return p.Stats(codebreaker.GameID).LessonsCleared >= len(codebreaker.Levels)
+		},
+	},
+
+	// Shell Quest.
+	{
+		ID:          "pathfinder",
+		Title:       "Pathfinder",
+		Description: "Finish your first shell quest.",
+		Check: func(p *profile.Profile, r games.Result) bool {
+			return r.Completed && r.GameID == shellquest.GameID
+		},
+	},
+	{
+		ID:          "under-par",
+		Title:       "Under Par",
+		Description: "Finish a shell quest in par or fewer commands.",
+		Check: func(p *profile.Profile, r games.Result) bool {
+			return r.Completed && r.GameID == shellquest.GameID && r.Accuracy >= 1
+		},
+	},
+	{
+		ID:          "shell-ready",
+		Title:       "Shell Ready",
+		Description: "Finish every shell quest. You are ready for the real one.",
+		Check: func(p *profile.Profile, r games.Result) bool {
+			return p.Stats(shellquest.GameID).LessonsCleared >= len(shellquest.Quests)
+		},
+	},
+
+	// Across the whole suite.
+	{
+		ID:          "all-rounder",
+		Title:       "All Rounder",
+		Description: "Pass a round in every game on the laptop.",
+		Check: func(p *profile.Profile, r games.Result) bool {
+			for _, id := range []string{
+				typing.GameID, maths.GameID, spelling.GameID,
+				codebreaker.GameID, shellquest.GameID,
+			} {
+				if p.Stats(id).LessonsCleared == 0 {
+					return false
+				}
+			}
+			return true
 		},
 	},
 }

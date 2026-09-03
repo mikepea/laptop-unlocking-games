@@ -6,9 +6,18 @@ It boots to a TTY running one Go binary — a typing trainer. Playing earns
 points, points unlock rungs of a ladder, and the ladder ends at a desktop with
 Steam on it. Everything above the first rung is hidden until it is reached.
 
-This is the first slice: the launcher, the typing game, the points and
-achievement model, and the update mechanism that will deliver every game after
-this one.
+## The games
+
+| game | opens at | teaches |
+| ---- | -------- | ------- |
+| **Typing Trainer** | free | home row through full sentences, with live WPM and accuracy |
+| **Maths Sprint** | 250 | addition, subtraction, times tables and division against the clock |
+| **Spelling Bee** | 550 | a word appears, vanishes, and has to be written from memory |
+| **Code Breaker** | 900 | deduction: crack a hidden code from exact/near feedback |
+| **Shell Quest** | 2000 | `ls`, `cd`, `cat`, `pwd` and hidden files, in a pretend filesystem |
+
+Shell Quest sits directly below the **shell** rung on purpose: by the time the
+real prompt is handed over, the commands should already be familiar.
 
 ## Quick start
 
@@ -42,9 +51,11 @@ Useful flags and their environment equivalents:
 
 ```
 cmd/unlock          the binary: flag parsing and wiring
+internal/catalog    the one place that knows which games ship
 internal/launcher   the root Bubble Tea model — menu, results, progress
 internal/games      the Game contract and registry
-internal/games/typing   the typing trainer
+internal/games/*    one package per game: typing, maths, spelling,
+                    codebreaker, shellquest
 internal/profile    persistent progress, one JSON file, written atomically
 internal/unlocks    the ladder from typing trainer to Steam
 internal/achievements   badge definitions and rules
@@ -72,7 +83,6 @@ to add the next game.
 
 ## Where this is going
 
-- More games, each one gated behind a rung of the ladder.
-- TaskBank as the real points ledger, so chores and typing feed the same number.
+- TaskBank as the real points ledger, so chores and games feed the same number.
 - The upper rungs — shell, editor, browser, desktop, Steam — provisioned by the
   unlock rather than just described by it.

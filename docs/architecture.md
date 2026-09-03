@@ -51,12 +51,16 @@ passing a later lesson out of order.
 
 ## Adding a game
 
-Implement `games.Game` (`ID`, `Title`, `Blurb`, `Stage`, `New`) and register it
-in `cmd/unlock/main.go`:
+Implement `games.Game` (`ID`, `Title`, `Blurb`, `Stage`, `New`) and add it to
+`internal/catalog`:
 
 ```go
-registry := games.NewRegistry(typing.New(), yourgame.New())
+return games.NewRegistry(typing.New(), ..., yourgame.New())
 ```
+
+The catalog is the single list the binary and the tests both read, so a game
+added there is covered by the cross-cutting checks: unique IDs, a gating stage
+that actually exists on the ladder, and a play screen that renders.
 
 `New` returns a fresh `tea.Model` for one session. It is handed the profile so
 it can gate its own internal levels, but it must not write to it — the launcher
@@ -67,9 +71,27 @@ Set `Stage()` to a rung of the ladder. A game whose stage is not yet unlocked
 still appears in the menu, greyed out with its cost, because something visible
 to aim at is the entire point.
 
-Keep the scoring logic out of the `tea.Model`. `typing.session` is the pattern:
-a plain struct with an injectable clock, tested without a terminal anywhere near
-it, with the model reduced to key handling and rendering.
+Keep the scoring logic out of the `tea.Model`. Every game follows the same
+split: a plain struct with an injectable clock and an injectable `*rand.Rand`
+(`typing.session`, `maths.round`, `spelling.round`, `codebreaker.puzzle`,
+`shellquest.shell`), tested without a terminal anywhere near it, and a model
+reduced to key handling and rendering.
+
+Content gets its own test. A generated question whose prompt and answer
+disagree, a spelling the answer field cannot accept, a Shell Quest whose secret
+appears in no file — each of these is unwinnable in a way a child would read as
+their own failure, so each has an invariant test that re-derives the answer
+independently of the code that produced it.
+
+### Scoring shape
+
+All five games pay on the same curve, so points mean roughly the same thing
+wherever they came from: finishing is the floor, pace adds a **capped** bonus,
+and accuracy pays only above 80% — guessing fast must never beat working it out.
+Two games deviate deliberately. Spelling has no pace component at all, because
+paying for speed would push toward answering before the word has been read. Code
+breaker has no partial credit, because a code is cracked or it is not; its bonus
+is for guesses left over.
 
 ## Rendering rules
 

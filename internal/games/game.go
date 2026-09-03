@@ -26,8 +26,17 @@ type Result struct {
 	Score    int
 	Points   int
 	Accuracy float64 // 0..1
-	WPM      float64
 	Duration time.Duration
+
+	// WPM is only meaningful for games that measure typing speed. Zero means
+	// "not applicable", and the results screen leaves the row out.
+	WPM float64
+
+	// Notes are the things worth looking at again — the spellings that were
+	// missed, the times tables that went wrong. The results screen lists them
+	// under "worth another look", so a round teaches something even when it
+	// was passed.
+	Notes []string
 }
 
 // FinishedMsg is sent by a game to hand control back to the launcher.
