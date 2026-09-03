@@ -10,14 +10,14 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/mikepea/aido-linux-unlocker/internal/achievements"
-	"github.com/mikepea/aido-linux-unlocker/internal/games"
-	"github.com/mikepea/aido-linux-unlocker/internal/points"
-	"github.com/mikepea/aido-linux-unlocker/internal/profile"
-	"github.com/mikepea/aido-linux-unlocker/internal/ui"
-	"github.com/mikepea/aido-linux-unlocker/internal/unlocks"
-	"github.com/mikepea/aido-linux-unlocker/internal/update"
-	"github.com/mikepea/aido-linux-unlocker/internal/version"
+	"github.com/mikepea/laptop-unlocking-games/internal/achievements"
+	"github.com/mikepea/laptop-unlocking-games/internal/games"
+	"github.com/mikepea/laptop-unlocking-games/internal/points"
+	"github.com/mikepea/laptop-unlocking-games/internal/profile"
+	"github.com/mikepea/laptop-unlocking-games/internal/ui"
+	"github.com/mikepea/laptop-unlocking-games/internal/unlocks"
+	"github.com/mikepea/laptop-unlocking-games/internal/update"
+	"github.com/mikepea/laptop-unlocking-games/internal/version"
 )
 
 type state int
@@ -321,7 +321,7 @@ func (m *Model) header() string {
 	if name == "" {
 		name = "player"
 	}
-	b.WriteString(ui.Title.Render("aido"))
+	b.WriteString(ui.Title.Render("unlock"))
 	b.WriteString(ui.Dim.Render(fmt.Sprintf("  %s's laptop", name)))
 	b.WriteString(ui.Dim.Render(fmt.Sprintf("   %s", version.Version)))
 	b.WriteString("\n\n")

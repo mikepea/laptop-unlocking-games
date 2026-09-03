@@ -1,4 +1,4 @@
-// Package version carries build identity for the aido binary.
+// Package version carries build identity for the unlock binary.
 package version
 
 // Version is the semantic version of this build. It is overridden at link time

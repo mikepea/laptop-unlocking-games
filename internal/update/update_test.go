@@ -47,7 +47,7 @@ func TestCheckerDisabledWithoutManifestURL(t *testing.T) {
 	}
 }
 
-// manifestServer serves m at /manifest.json and the artifact bytes at /aido.
+// manifestServer serves m at /manifest.json and the artifact bytes at /unlock.
 func manifestServer(t *testing.T, version string, payload []byte) (*httptest.Server, string) {
 	t.Helper()
 
@@ -58,7 +58,7 @@ func manifestServer(t *testing.T, version string, payload []byte) (*httptest.Ser
 	srv := httptest.NewServer(mux)
 	t.Cleanup(srv.Close)
 
-	mux.HandleFunc("/aido", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/unlock", func(w http.ResponseWriter, r *http.Request) {
 		w.Write(payload)
 	})
 	mux.HandleFunc("/manifest.json", func(w http.ResponseWriter, r *http.Request) {
@@ -66,7 +66,7 @@ func manifestServer(t *testing.T, version string, payload []byte) (*httptest.Ser
 			Version: version,
 			Notes:   "a new game",
 			Artifacts: map[string]Artifact{
-				"linux/amd64": {URL: srv.URL + "/aido", SHA256: hexSum, Size: int64(len(payload))},
+				"linux/amd64": {URL: srv.URL + "/unlock", SHA256: hexSum, Size: int64(len(payload))},
 			},
 		})
 	})
@@ -118,14 +118,14 @@ func TestApplyVerifiesChecksumAndReplacesTarget(t *testing.T) {
 	payload := []byte("#!/bin/sh\necho new\n")
 	srv, hexSum := manifestServer(t, "0.2.0", payload)
 
-	target := filepath.Join(t.TempDir(), "aido")
+	target := filepath.Join(t.TempDir(), "unlock")
 	if err := os.WriteFile(target, []byte("old binary"), 0o755); err != nil {
 		t.Fatal(err)
 	}
 
 	available := &Available{
 		Version:  "0.2.0",
-		Artifact: Artifact{URL: srv.URL + "/aido", SHA256: hexSum, Size: int64(len(payload))},
+		Artifact: Artifact{URL: srv.URL + "/unlock", SHA256: hexSum, Size: int64(len(payload))},
 	}
 	if err := Apply(context.Background(), available, target, srv.Client()); err != nil {
 		t.Fatalf("Apply: %v", err)
@@ -151,7 +151,7 @@ func TestApplyRefusesBadChecksumAndLeavesTargetAlone(t *testing.T) {
 	srv, _ := manifestServer(t, "0.2.0", []byte("new binary"))
 
 	dir := t.TempDir()
-	target := filepath.Join(dir, "aido")
+	target := filepath.Join(dir, "unlock")
 	if err := os.WriteFile(target, []byte("old binary"), 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -159,7 +159,7 @@ func TestApplyRefusesBadChecksumAndLeavesTargetAlone(t *testing.T) {
 	available := &Available{
 		Version: "0.2.0",
 		Artifact: Artifact{
-			URL:    srv.URL + "/aido",
+			URL:    srv.URL + "/unlock",
 			SHA256: "0000000000000000000000000000000000000000000000000000000000000000",
 		},
 	}

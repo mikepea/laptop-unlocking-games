@@ -8,7 +8,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/mikepea/aido-linux-unlocker/internal/profile"
+	"github.com/mikepea/laptop-unlocking-games/internal/profile"
 )
 
 // ErrNotConfigured is returned by a backend that has not been given the

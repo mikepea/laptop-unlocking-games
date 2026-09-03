@@ -3,17 +3,17 @@
 # Writes dist/manifest.json for the binaries already built into dist/.
 #
 # The manifest is what a laptop in the field polls. Publish dist/ somewhere the
-# laptop can reach over HTTPS and point AIDO_MANIFEST_URL at manifest.json; the
+# laptop can reach over HTTPS and point UNLOCK_MANIFEST_URL at manifest.json; the
 # sha256 in here is the only thing standing between the laptop and whatever the
 # network hands it, so it is generated from the actual artifact every time.
 set -euo pipefail
 
 VERSION="${VERSION:?set VERSION}"
-BINARY="${BINARY:-aido}"
+BINARY="${BINARY:-unlock}"
 TARGET_OS="${TARGET_OS:-linux}"
 TARGET_ARCH="${TARGET_ARCH:-amd64}"
 # Where the artifacts will be served from, used to build the URLs.
-BASE_URL="${BASE_URL:-https://example.invalid/aido}"
+BASE_URL="${BASE_URL:-https://example.invalid/unlock}"
 NOTES="${NOTES:-}"
 
 artifact="dist/${BINARY}-${TARGET_OS}-${TARGET_ARCH}"

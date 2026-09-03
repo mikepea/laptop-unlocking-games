@@ -11,7 +11,7 @@ That constraint is deliberate. A laptop that is off for three weeks and then
 opened in a car with no wifi has to work exactly as well as one that is online.
 
 ```
-  agetty --autologin ──► bash ──► exec aido
+  agetty --autologin ──► bash ──► exec unlock
                                     │
                                     ├── launcher (root tea.Model)
                                     │     ├── menu ── games.Registry
@@ -19,11 +19,11 @@ opened in a car with no wifi has to work exactly as well as one that is online.
                                     │     ├── results ── achievements + unlocks
                                     │     └── progress ── the ladder
                                     │
-                                    ├── profile.Store  ~/.local/share/aido/profile.json
+                                    ├── profile.Store  ~/.local/share/unlock/profile.json
                                     ├── points.Backend  local now, TaskBank later
                                     └── update.Checker  background, silent on failure
 
-  systemd timer ──► aido update -apply ──► replaces /usr/local/bin/aido
+  systemd timer ──► unlock update -apply ──► replaces /usr/local/bin/unlock
 ```
 
 ## Progress model
@@ -52,7 +52,7 @@ passing a later lesson out of order.
 ## Adding a game
 
 Implement `games.Game` (`ID`, `Title`, `Blurb`, `Stage`, `New`) and register it
-in `cmd/aido/main.go`:
+in `cmd/unlock/main.go`:
 
 ```go
 registry := games.NewRegistry(typing.New(), yourgame.New())
@@ -88,7 +88,7 @@ consequences:
   way to skip.
 
 The block characters in the progress bar are the one exception, and
-`deploy/aido-session.sh` sets a console font that has them.
+`deploy/unlock-session.sh` sets a console font that has them.
 
 ## Points backends
 
@@ -115,7 +115,7 @@ queue of awards that have not yet been mirrored.
 
 ## Updates
 
-`aido update` fetches a manifest, compares versions, and if there is something
+`unlock update` fetches a manifest, compares versions, and if there is something
 newer for this GOOS/GOARCH, downloads it, verifies its SHA-256, and renames it
 over the target. The manifest is generated from the real artifact by
 `scripts/release.sh`, so the checksum cannot drift from the binary.

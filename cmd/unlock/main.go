@@ -1,9 +1,9 @@
-// Command aido is the launcher the laptop boots into.
+// Command unlock is the launcher the laptop boots into.
 //
-//	aido            play
-//	aido version    print build identity
-//	aido update     check for a newer build, and with --apply, install it
-//	aido profile    print the profile path and a summary
+//	unlock            play
+//	unlock version    print build identity
+//	unlock update     check for a newer build, and with --apply, install it
+//	unlock profile    print the profile path and a summary
 package main
 
 import (
@@ -18,18 +18,18 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/mikepea/aido-linux-unlocker/internal/games"
-	"github.com/mikepea/aido-linux-unlocker/internal/games/typing"
-	"github.com/mikepea/aido-linux-unlocker/internal/launcher"
-	"github.com/mikepea/aido-linux-unlocker/internal/points"
-	"github.com/mikepea/aido-linux-unlocker/internal/profile"
-	"github.com/mikepea/aido-linux-unlocker/internal/update"
-	"github.com/mikepea/aido-linux-unlocker/internal/version"
+	"github.com/mikepea/laptop-unlocking-games/internal/games"
+	"github.com/mikepea/laptop-unlocking-games/internal/games/typing"
+	"github.com/mikepea/laptop-unlocking-games/internal/launcher"
+	"github.com/mikepea/laptop-unlocking-games/internal/points"
+	"github.com/mikepea/laptop-unlocking-games/internal/profile"
+	"github.com/mikepea/laptop-unlocking-games/internal/update"
+	"github.com/mikepea/laptop-unlocking-games/internal/version"
 )
 
 func main() {
 	if err := run(os.Args[1:]); err != nil {
-		fmt.Fprintln(os.Stderr, "aido:", err)
+		fmt.Fprintln(os.Stderr, "unlock:", err)
 		os.Exit(1)
 	}
 }
@@ -41,11 +41,11 @@ type config struct {
 }
 
 func (c *config) bind(fs *flag.FlagSet) {
-	fs.StringVar(&c.profilePath, "profile", os.Getenv("AIDO_PROFILE"),
-		"path to the profile JSON (default: $XDG_DATA_HOME/aido/profile.json)")
-	fs.StringVar(&c.playerName, "name", envOr("AIDO_PLAYER", "player"),
+	fs.StringVar(&c.profilePath, "profile", os.Getenv("UNLOCK_PROFILE"),
+		"path to the profile JSON (default: $XDG_DATA_HOME/unlock/profile.json)")
+	fs.StringVar(&c.playerName, "name", envOr("UNLOCK_PLAYER", "player"),
 		"player name, used on a first run")
-	fs.StringVar(&c.manifestURL, "manifest-url", os.Getenv("AIDO_MANIFEST_URL"),
+	fs.StringVar(&c.manifestURL, "manifest-url", os.Getenv("UNLOCK_MANIFEST_URL"),
 		"release manifest URL; empty disables update checks")
 }
 
@@ -86,15 +86,15 @@ func run(args []string) error {
 }
 
 func usage() {
-	fmt.Fprint(os.Stderr, `aido — the laptop that unlocks
+	fmt.Fprint(os.Stderr, `unlock — the laptop that unlocks
 
 usage:
-  aido [play]     start the launcher
-  aido version    print build identity
-  aido update     check for a newer build (--apply to install it)
-  aido profile    show where progress is stored, and a summary
+  unlock [play]     start the launcher
+  unlock version    print build identity
+  unlock update     check for a newer build (--apply to install it)
+  unlock profile    show where progress is stored, and a summary
 
-flags are shared by all commands; see aido play -h
+flags are shared by all commands; see unlock play -h
 `)
 }
 
@@ -138,7 +138,7 @@ func runPlay(args []string) error {
 }
 
 func runVersion() error {
-	fmt.Printf("aido %s (%s, built %s)\n", version.Version, version.Commit, version.BuildDate)
+	fmt.Printf("unlock %s (%s, built %s)\n", version.Version, version.Commit, version.BuildDate)
 	return nil
 }
 
@@ -154,7 +154,7 @@ func runUpdate(args []string) error {
 
 	checker := &update.Checker{ManifestURL: cfg.manifestURL, Current: version.Version}
 	if !checker.Enabled() {
-		return errors.New("no manifest URL configured; set -manifest-url or AIDO_MANIFEST_URL")
+		return errors.New("no manifest URL configured; set -manifest-url or UNLOCK_MANIFEST_URL")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -165,7 +165,7 @@ func runUpdate(args []string) error {
 		return err
 	}
 	if available == nil {
-		fmt.Printf("aido %s is up to date\n", version.Version)
+		fmt.Printf("unlock %s is up to date\n", version.Version)
 		return nil
 	}
 

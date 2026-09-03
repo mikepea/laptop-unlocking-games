@@ -6,9 +6,9 @@
 package achievements
 
 import (
-	"github.com/mikepea/aido-linux-unlocker/internal/games"
-	"github.com/mikepea/aido-linux-unlocker/internal/games/typing"
-	"github.com/mikepea/aido-linux-unlocker/internal/profile"
+	"github.com/mikepea/laptop-unlocking-games/internal/games"
+	"github.com/mikepea/laptop-unlocking-games/internal/games/typing"
+	"github.com/mikepea/laptop-unlocking-games/internal/profile"
 )
 
 // Achievement is one badge.

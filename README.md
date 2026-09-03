@@ -1,4 +1,4 @@
-# aido
+# laptop-unlocking-games
 
 A laptop that opens up as it is earned.
 
@@ -24,24 +24,24 @@ Go 1.26.5, pinned in `.tool-versions`.
 ## Commands
 
 ```
-aido            start the launcher
-aido version    print build identity
-aido update     check for a newer build; -apply installs it
-aido profile    show where progress is stored, and a summary
+unlock            start the launcher
+unlock version    print build identity
+unlock update     check for a newer build; -apply installs it
+unlock profile    show where progress is stored, and a summary
 ```
 
 Useful flags and their environment equivalents:
 
-| flag             | env                  | meaning                                            |
-| ---------------- | -------------------- | -------------------------------------------------- |
-| `-profile`       | `AIDO_PROFILE`       | where progress lives, default `$XDG_DATA_HOME/aido` |
-| `-name`          | `AIDO_PLAYER`        | player name, used on a first run                    |
-| `-manifest-url`  | `AIDO_MANIFEST_URL`  | release manifest; empty disables update checks      |
+| flag            | env                   | meaning                                               |
+| --------------- | --------------------- | ----------------------------------------------------- |
+| `-profile`      | `UNLOCK_PROFILE`      | where progress lives, default `$XDG_DATA_HOME/unlock`  |
+| `-name`         | `UNLOCK_PLAYER`       | player name, used on a first run                       |
+| `-manifest-url` | `UNLOCK_MANIFEST_URL` | release manifest; empty disables update checks         |
 
 ## Layout
 
 ```
-cmd/aido            the binary: flag parsing and wiring
+cmd/unlock          the binary: flag parsing and wiring
 internal/launcher   the root Bubble Tea model — menu, results, progress
 internal/games      the Game contract and registry
 internal/games/typing   the typing trainer
@@ -60,10 +60,10 @@ Target is Arch on x86_64. From a checkout on the machine:
 
 ```sh
 make dist
-sudo AIDO_MANIFEST_URL=https://.../manifest.json ./deploy/install.sh
+sudo UNLOCK_MANIFEST_URL=https://.../manifest.json ./deploy/install.sh
 ```
 
-That creates an unprivileged `aido` account, autologs it in on tty1, launches
+That creates an unprivileged `player` account, autologs it in on tty1, launches
 the game as its login shell, and enables a daily update timer. tty2 is left
 alone so there is still a way in.
 

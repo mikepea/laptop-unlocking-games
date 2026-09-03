@@ -1,4 +1,4 @@
-// Package ui holds the shared look of every aido screen. Colours are chosen
+// Package ui holds the shared look of every unlock screen. Colours are chosen
 // from the 256-colour cube; Lip Gloss downsamples them automatically on a plain
 // Linux TTY, which is where this spends most of its life.
 package ui

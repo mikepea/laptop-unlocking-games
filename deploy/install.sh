@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 #
-# Installs aido on the Arch box. Run as root, from a checkout, after `make dist`.
+# Installs unlock on the Arch box. Run as root, from a checkout, after `make dist`.
 #
-#   sudo AIDO_MANIFEST_URL=https://.../manifest.json ./deploy/install.sh
+#   sudo UNLOCK_MANIFEST_URL=https://.../manifest.json ./deploy/install.sh
 #
 # Idempotent: re-run it after every change to the units or the binary.
 set -euo pipefail
 
-PLAYER="${PLAYER:-aido}"
-BINARY_SRC="${BINARY_SRC:-dist/aido-linux-amd64}"
-BINARY_DST="/usr/local/bin/aido"
-MANIFEST_URL="${AIDO_MANIFEST_URL:-}"
+PLAYER="${PLAYER:-player}"
+BINARY_SRC="${BINARY_SRC:-dist/unlock-linux-amd64}"
+BINARY_DST="/usr/local/bin/unlock"
+MANIFEST_URL="${UNLOCK_MANIFEST_URL:-}"
 
 [[ $EUID -eq 0 ]] || { echo "run me as root" >&2; exit 1; }
 [[ -f "$BINARY_SRC" ]] || { echo "missing $BINARY_SRC; run make dist first" >&2; exit 1; }
@@ -26,13 +26,13 @@ if ! id -u "$PLAYER" >/dev/null 2>&1; then
 fi
 
 echo "==> installing the launcher session"
-install -Dm0644 deploy/aido-session.sh "/home/$PLAYER/.aido-session.sh"
-chown "$PLAYER:$PLAYER" "/home/$PLAYER/.aido-session.sh"
+install -Dm0644 deploy/unlock-session.sh "/home/$PLAYER/.unlock-session.sh"
+chown "$PLAYER:$PLAYER" "/home/$PLAYER/.unlock-session.sh"
 profile="/home/$PLAYER/.bash_profile"
 touch "$profile"
 chown "$PLAYER:$PLAYER" "$profile"
-if ! grep -q '.aido-session.sh' "$profile"; then
-    printf '\n. "$HOME/.aido-session.sh"\n' >> "$profile"
+if ! grep -q '.unlock-session.sh' "$profile"; then
+    printf '\n. "$HOME/.unlock-session.sh"\n' >> "$profile"
 fi
 
 echo "==> installing systemd units"
@@ -41,24 +41,24 @@ install -Dm0644 deploy/systemd/getty@tty1.service.d/autologin.conf \
 # The unit file names the account, so keep it in step with $PLAYER.
 sed -i "s/--autologin [A-Za-z0-9_-]*/--autologin $PLAYER/" \
     /etc/systemd/system/getty@tty1.service.d/autologin.conf
-install -Dm0644 deploy/systemd/aido-update.service /etc/systemd/system/aido-update.service
-install -Dm0644 deploy/systemd/aido-update.timer /etc/systemd/system/aido-update.timer
+install -Dm0644 deploy/systemd/unlock-update.service /etc/systemd/system/unlock-update.service
+install -Dm0644 deploy/systemd/unlock-update.timer /etc/systemd/system/unlock-update.timer
 
-echo "==> writing /etc/aido/aido.env"
-install -d -m0755 /etc/aido
+echo "==> writing /etc/unlock/unlock.env"
+install -d -m0755 /etc/unlock
 if [[ -n "$MANIFEST_URL" ]]; then
-    printf 'AIDO_MANIFEST_URL=%s\nAIDO_PLAYER=%s\n' "$MANIFEST_URL" "$PLAYER" > /etc/aido/aido.env
-elif [[ ! -f /etc/aido/aido.env ]]; then
+    printf 'UNLOCK_MANIFEST_URL=%s\nUNLOCK_PLAYER=%s\n' "$MANIFEST_URL" "$PLAYER" > /etc/unlock/unlock.env
+elif [[ ! -f /etc/unlock/unlock.env ]]; then
     # The update unit reads this file unconditionally, so it has to exist even
     # when updates are not configured yet.
-    printf 'AIDO_MANIFEST_URL=\nAIDO_PLAYER=%s\n' "$PLAYER" > /etc/aido/aido.env
-    echo "    no AIDO_MANIFEST_URL set; update checks stay off until you fill it in"
+    printf 'UNLOCK_MANIFEST_URL=\nUNLOCK_PLAYER=%s\n' "$PLAYER" > /etc/unlock/unlock.env
+    echo "    no UNLOCK_MANIFEST_URL set; update checks stay off until you fill it in"
 fi
-chmod 0644 /etc/aido/aido.env
+chmod 0644 /etc/unlock/unlock.env
 
 echo "==> reloading systemd"
 systemctl daemon-reload
-systemctl enable --now aido-update.timer
+systemctl enable --now unlock-update.timer
 systemctl restart getty@tty1.service
 
 echo

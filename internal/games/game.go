@@ -1,4 +1,4 @@
-// Package games defines the contract every aido game implements and the
+// Package games defines the contract every unlock game implements and the
 // registry the launcher reads to build its menu.
 package games
 
@@ -8,7 +8,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/mikepea/aido-linux-unlocker/internal/profile"
+	"github.com/mikepea/laptop-unlocking-games/internal/profile"
 )
 
 // Result is what a game reports back to the launcher when the player leaves it.

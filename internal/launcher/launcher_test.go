@@ -8,10 +8,10 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/mikepea/aido-linux-unlocker/internal/games"
-	"github.com/mikepea/aido-linux-unlocker/internal/games/typing"
-	"github.com/mikepea/aido-linux-unlocker/internal/points"
-	"github.com/mikepea/aido-linux-unlocker/internal/profile"
+	"github.com/mikepea/laptop-unlocking-games/internal/games"
+	"github.com/mikepea/laptop-unlocking-games/internal/games/typing"
+	"github.com/mikepea/laptop-unlocking-games/internal/points"
+	"github.com/mikepea/laptop-unlocking-games/internal/profile"
 )
 
 func newTestModel(t *testing.T) (*Model, *profile.Store) {

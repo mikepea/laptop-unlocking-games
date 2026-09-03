@@ -13,5 +13,5 @@ if [ "$(tty)" = "/dev/tty1" ]; then
     # bars. Failure is fine: the default font renders everything else.
     setfont ter-116n 2>/dev/null || true
 
-    exec /usr/local/bin/aido
+    exec /usr/local/bin/unlock
 fi

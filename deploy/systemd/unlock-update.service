@@ -1,17 +1,17 @@
-# Pull a newer aido if one has been published.
+# Pull a newer unlock if one has been published.
 #
 # Runs as root because the binary lives in /usr/local/bin. The running process
 # keeps its own inode on Linux, so replacing the file under a game in progress
 # is safe: the new build takes over the next time the launcher restarts.
 [Unit]
-Description=Check for and install aido updates
+Description=Check for and install unlock updates
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=oneshot
-EnvironmentFile=/etc/aido/aido.env
-ExecStart=/usr/local/bin/aido update -apply -target /usr/local/bin/aido
+EnvironmentFile=/etc/unlock/unlock.env
+ExecStart=/usr/local/bin/unlock update -apply -target /usr/local/bin/unlock
 
 # A failed check must never be loud. The laptop is offline more often than not,
 # and a red unit on boot is not something to explain to a nine-year-old.

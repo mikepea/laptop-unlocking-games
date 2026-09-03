@@ -10,9 +10,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/mikepea/aido-linux-unlocker/internal/games"
-	"github.com/mikepea/aido-linux-unlocker/internal/profile"
-	"github.com/mikepea/aido-linux-unlocker/internal/ui"
+	"github.com/mikepea/laptop-unlocking-games/internal/games"
+	"github.com/mikepea/laptop-unlocking-games/internal/profile"
+	"github.com/mikepea/laptop-unlocking-games/internal/ui"
 )
 
 // GameID is the registry key and profile stats key for this game.

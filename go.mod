@@ -1,4 +1,4 @@
-module github.com/mikepea/aido-linux-unlocker
+module github.com/mikepea/laptop-unlocking-games
 
 go 1.26.5
 

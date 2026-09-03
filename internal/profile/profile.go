@@ -133,8 +133,8 @@ func NewStore(path string) *Store { return &Store{path: path} }
 // Path is the file this Store reads and writes.
 func (s *Store) Path() string { return s.path }
 
-// DefaultPath is $XDG_DATA_HOME/aido/profile.json, falling back to
-// ~/.local/share/aido/profile.json.
+// DefaultPath is $XDG_DATA_HOME/unlock/profile.json, falling back to
+// ~/.local/share/unlock/profile.json.
 func DefaultPath() (string, error) {
 	dir := os.Getenv("XDG_DATA_HOME")
 	if dir == "" {
@@ -144,7 +144,7 @@ func DefaultPath() (string, error) {
 		}
 		dir = filepath.Join(home, ".local", "share")
 	}
-	return filepath.Join(dir, "aido", "profile.json"), nil
+	return filepath.Join(dir, "unlock", "profile.json"), nil
 }
 
 // Load reads the profile. A missing file is not an error: it yields a fresh
@@ -163,7 +163,7 @@ func (s *Store) Load(name string) (*Profile, error) {
 		return nil, fmt.Errorf("parse profile %s: %w", s.path, err)
 	}
 	if p.SchemaVersion > schemaVersion {
-		return nil, fmt.Errorf("profile %s was written by a newer version of aido (schema %d, we understand %d)", s.path, p.SchemaVersion, schemaVersion)
+		return nil, fmt.Errorf("profile %s was written by a newer version of unlock (schema %d, we understand %d)", s.path, p.SchemaVersion, schemaVersion)
 	}
 	// Maps are nil when the file predates a field; normalise so callers can
 	// write into them without checking.

@@ -146,7 +146,7 @@ func Apply(ctx context.Context, u *Available, targetPath string, client *http.Cl
 		return fmt.Errorf("download %s: unexpected status %s", u.Artifact.URL, resp.Status)
 	}
 
-	tmp, err := os.CreateTemp(dir, ".aido-update-*")
+	tmp, err := os.CreateTemp(dir, ".unlock-update-*")
 	if err != nil {
 		return fmt.Errorf("create temp file in %s: %w", dir, err)
 	}
