@@ -67,6 +67,15 @@ func (f *Field) Render(width int) string {
 // was not one.
 func Digits(r rune) bool { return (r >= '0' && r <= '9') || r == '-' }
 
+// Number accepts everything an answer can be written with: digits, a minus
+// sign, a slash for a fraction and a point for a decimal. It does not try to
+// enforce that what is typed is a well-formed number -- that is the marker's
+// job, and a filter that refused a second point would leave a child unable to
+// correct a typo.
+func Number(r rune) bool {
+	return (r >= '0' && r <= '9') || r == '-' || r == '/' || r == '.'
+}
+
 // Letters accepts letters, apostrophes and hyphens: everything a spelling can
 // contain and nothing else.
 func Letters(r rune) bool {

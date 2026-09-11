@@ -98,82 +98,18 @@ func checkEquation(t *testing.T, level, context string, answer int) {
 
 func levelByTitle(t *testing.T, title string) Level {
 	t.Helper()
-	for _, l := range algebraLevels {
+	for _, l := range equationLevels {
 		if l.Title == title {
 			return l
 		}
 	}
-	t.Fatalf("no algebra level titled %q", title)
+	t.Fatalf("no chapter 5 level titled %q", title)
 	return Level{}
 }
 
-func TestEquationLevelsBalanceWithTheirAnswer(t *testing.T) {
-	r := games.NewTestRand(21)
-	for _, title := range []string{"Missing Number", "One Step", "Two Steps"} {
-		l := levelByTitle(t, title)
-		for i := 0; i < 400; i++ {
-			q := l.Gen(r)
-			checkEquation(t, title, q.Context, q.Answer)
-			if q.Answer < 0 {
-				t.Fatalf("%s: negative answer in %q", title, q.Context)
-			}
-		}
-	}
-}
-
-func TestSubstitutionMatchesTheValuesGiven(t *testing.T) {
-	l := levelByTitle(t, "Putting Numbers In")
-	r := games.NewTestRand(22)
-	for i := 0; i < 400; i++ {
-		q := l.Gen(r)
-		vars := map[string]int{}
-		for _, assign := range strings.Split(q.Context, ", ") {
-			parts := strings.Split(assign, " = ")
-			if len(parts) != 2 {
-				t.Fatalf("bad context %q", q.Context)
-			}
-			n, err := strconv.Atoi(parts[1])
-			if err != nil {
-				t.Fatalf("bad value in %q: %v", q.Context, err)
-			}
-			vars[parts[0]] = n
-		}
-		got, err := evalTerms(strings.Fields(q.Prompt), vars)
-		if err != nil {
-			t.Fatalf("prompt %q with %q: %v", q.Prompt, q.Context, err)
-		}
-		if got != q.Answer {
-			t.Errorf("%q where %s is %d, question claims %d", q.Prompt, q.Context, got, q.Answer)
-		}
-	}
-}
-
-func TestCollectingUpCountsEveryMatchingTerm(t *testing.T) {
-	l := levelByTitle(t, "Collecting Up")
-	r := games.NewTestRand(23)
-	for i := 0; i < 400; i++ {
-		q := l.Gen(r)
-		lhs, _, ok := strings.Cut(q.Context, " = ")
-		if !ok {
-			t.Fatalf("bad context %q", q.Context)
-		}
-		total := 0
-		for _, tok := range strings.Fields(lhs) {
-			m := coefficient.FindStringSubmatch(tok)
-			if m == nil || m[2] != "x" {
-				continue // a "+", or a y term that must not be counted
-			}
-			n := 1
-			if m[1] != "" {
-				n, _ = strconv.Atoi(m[1])
-			}
-			total += n
-		}
-		if total != q.Answer {
-			t.Errorf("%q has %d xs, question claims %d", q.Context, total, q.Answer)
-		}
-	}
-}
+// The tests below are the ones that look across a whole multi-step problem.
+// Per-question checking lives in answerCheckers, which covers every level in
+// every chapter.
 
 // The third step of a simplify problem asks for "the biggest number that
 // divides both". If the coefficients left inside the brackets share a factor
@@ -187,13 +123,15 @@ func TestFactorisationIsTheFullestOne(t *testing.T) {
 		if len(steps) != 4 {
 			t.Fatalf("expected 4 steps, got %d", len(steps))
 		}
-		totalX, totalY, factor := steps[0].Answer, steps[1].Answer, steps[2].Answer
+		totalX := answerInt(t, "Simplify and Factorise", steps[0])
+		totalY := answerInt(t, "Simplify and Factorise", steps[1])
+		factor := answerInt(t, "Simplify and Factorise", steps[2])
 
 		if want := gcd(totalX, totalY); factor != want {
 			t.Fatalf("%q: biggest common factor of %d and %d is %d, question says %d",
 				steps[2].Context, totalX, totalY, want, factor)
 		}
-		if got := steps[3].Answer; got*factor != totalY {
+		if got := answerInt(t, "Simplify and Factorise", steps[3]); got*factor != totalY {
 			t.Errorf("%q: %d x %d != %d", steps[3].Context, got, factor, totalY)
 		}
 	}
@@ -207,8 +145,8 @@ func TestSimplifyStepsShowTheirWorking(t *testing.T) {
 			if q.Context == "" {
 				t.Errorf("step %q has nothing on screen to work from", q.Prompt)
 			}
-			if q.Answer <= 0 {
-				t.Errorf("step %q has answer %d", q.Prompt, q.Answer)
+			if n, _ := q.Answer.Whole(); n <= 0 {
+				t.Errorf("step %q has answer %s", q.Prompt, q.Answer)
 			}
 		}
 	}
@@ -227,21 +165,15 @@ func TestSteppedRoundsEndOnAWholeProblem(t *testing.T) {
 	}
 }
 
-// Negative numbers are their own topic and none of these levels teach it. An
-// equation is allowed to contain a minus sign as an operator ("x - 6 = 1") but
-// never a negative value ("x - 9 = -2"), which would land unannounced on a
-// player who is here to find out what a letter means.
-func TestNoNegativeNumbersAreShown(t *testing.T) {
+// Negative numbers are chapter 1's topic, and chapter 5 does not revisit
+// them. An equation is allowed to contain a minus sign as an operator
+// ("x - 6 = 1") but never a negative value ("x - 9 = -2"), which would land
+// unannounced on a player who is here to find out what a letter means.
+func TestChapterFiveShowsNoNegativeNumbers(t *testing.T) {
 	r := games.NewTestRand(27)
-	for _, l := range algebraLevels {
+	for _, l := range equationLevels {
 		for i := 0; i < 500; i++ {
-			var qs []Question
-			if l.GenSteps != nil {
-				qs = l.GenSteps(r)
-			} else {
-				qs = []Question{l.Gen(r)}
-			}
-			for _, q := range qs {
+			for _, q := range questionsFrom(l, r) {
 				for _, text := range []string{q.Context, q.Prompt} {
 					for _, tok := range strings.Fields(text) {
 						if n, err := strconv.Atoi(tok); err == nil && n < 0 {

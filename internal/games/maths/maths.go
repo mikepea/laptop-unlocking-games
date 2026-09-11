@@ -1,5 +1,6 @@
-// Package maths is the number-facts game: addition, subtraction, times tables
-// and division, against the clock.
+// Package maths is the number game: the number facts to warm up on, and then
+// the first nine chapters of the Art of Problem Solving Prealgebra book, a
+// chapter at a time, against the clock.
 package maths
 
 import (
@@ -28,7 +29,7 @@ func New() *Game { return &Game{} }
 
 func (g *Game) ID() string    { return GameID }
 func (g *Game) Title() string { return "Maths Sprint" }
-func (g *Game) Blurb() string { return "Number facts against the clock." }
+func (g *Game) Blurb() string { return "Number facts, then prealgebra, against the clock." }
 func (g *Game) Stage() string { return "arcade" }
 
 // New builds a session model for one visit to the game.
@@ -43,7 +44,10 @@ func (g *Game) New(p *profile.Profile) tea.Model {
 type mode int
 
 const (
-	modeSelect mode = iota
+	// modeChapters is the contents page: which chapter of the book.
+	modeChapters mode = iota
+	// modeLevels is the levels inside one chapter.
+	modeLevels
 	modePlay
 	// modeCorrection holds the right answer on screen after a wrong one. It is
 	// the only place the game deliberately slows down: an answer that flashed
@@ -54,7 +58,11 @@ const (
 type model struct {
 	mode mode
 
+	// cleared is how many levels of the flat curriculum have been passed. The
+	// two cursors below are a position in the menu; LevelIndex turns them
+	// back into an index into that flat list.
 	cleared int
+	chapter int
 	cursor  int
 
 	rng   *rand.Rand
@@ -79,8 +87,10 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	switch m.mode {
-	case modeSelect:
-		return m.updateSelect(key)
+	case modeChapters:
+		return m.updateChapters(key)
+	case modeLevels:
+		return m.updateLevels(key)
 	case modeCorrection:
 		return m.updateCorrection(key)
 	default:
@@ -88,24 +98,54 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 }
 
-func (m *model) updateSelect(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (m *model) updateChapters(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "esc", "q":
 		return m, games.Exit()
+	case "up", "k":
+		if m.chapter > 0 {
+			m.chapter--
+		}
+	case "down", "j":
+		if m.chapter < len(Chapters)-1 {
+			m.chapter++
+		}
+	case "enter", " ", "right", "l":
+		if !ChapterUnlocked(m.chapter, m.cleared) {
+			return m, nil
+		}
+		// Open on the first level not yet passed, so carrying on where you
+		// left off costs no keystrokes. A finished chapter opens on its last
+		// level, which is the one worth replaying.
+		done := ChapterCleared(m.chapter, m.cleared)
+		m.cursor = min(done, len(Chapters[m.chapter].Levels)-1)
+		m.mode = modeLevels
+	}
+	return m, nil
+}
+
+func (m *model) updateLevels(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	chapter := Chapters[m.chapter]
+	switch msg.String() {
+	case "esc", "q", "left", "h":
+		m.mode = modeChapters
 	case "up", "k":
 		if m.cursor > 0 {
 			m.cursor--
 		}
 	case "down", "j":
-		if m.cursor < len(Levels)-1 {
+		if m.cursor < len(chapter.Levels)-1 {
 			m.cursor++
 		}
 	case "enter", " ":
-		if !LevelUnlocked(m.cursor, m.cleared) {
+		if !LevelUnlocked(LevelIndex(m.chapter, m.cursor), m.cleared) {
 			return m, nil
 		}
-		m.rd = newRound(Levels[m.cursor], m.rng)
-		m.field = ui.Field{Max: 4, Filter: ui.Digits}
+		m.rd = newRound(chapter.Levels[m.cursor], m.rng)
+		// Wide enough for a fraction like 15/16 or a decimal like 0.0625, and
+		// no wider: a field that takes ten characters suggests an answer that
+		// needs them.
+		m.field = ui.Field{Max: 8, Filter: ui.Number}
 		m.mode = modePlay
 	}
 	return m, nil
@@ -166,7 +206,7 @@ func (m *model) result() games.Result {
 		GameID:     GameID,
 		Completed:  m.rd.passed(),
 		Round:      m.rd.level.Title,
-		RoundIndex: m.cursor,
+		RoundIndex: LevelIndex(m.chapter, m.cursor),
 		Score:      m.rd.score(),
 		Points:     m.rd.score(),
 		Accuracy:   m.rd.accuracy(),
@@ -177,8 +217,10 @@ func (m *model) result() games.Result {
 
 func (m *model) View() string {
 	switch m.mode {
-	case modeSelect:
-		return m.viewSelect()
+	case modeChapters:
+		return m.viewChapters()
+	case modeLevels:
+		return m.viewLevels()
 	case modeCorrection:
 		return m.viewCorrection()
 	default:
@@ -186,45 +228,102 @@ func (m *model) View() string {
 	}
 }
 
-func (m *model) viewSelect() string {
+// badgeFor is the four-character marker in front of a menu row: passed, open
+// to play, or still shut.
+func badgeFor(done, unlocked bool) string {
+	switch {
+	case done:
+		return ui.BadgeDone()
+	case unlocked:
+		return ui.BadgeOpen()
+	}
+	return ui.BadgeLock()
+}
+
+// marker is the arrow in front of the row the cursor is on.
+func marker(selected bool) string {
+	if selected {
+		return ">"
+	}
+	return " "
+}
+
+// rowTitle pads a menu row's title to a column and styles it for its state.
+func rowTitle(title string, width int, selected, unlocked bool) string {
+	padded := fmt.Sprintf("%-*s", width, title)
+	switch {
+	case selected:
+		return ui.Selected.Render(padded)
+	case !unlocked:
+		return ui.Locked.Render(padded)
+	}
+	return padded
+}
+
+func (m *model) viewChapters() string {
 	var b strings.Builder
 	b.WriteString(ui.Title.Render("Maths Sprint"))
 	b.WriteString("\n")
-	b.WriteString(ui.Subtitle.Render("Pass a level to open the next one."))
+	b.WriteString(ui.Subtitle.Render("Prealgebra, a chapter at a time. Pass a level to open the next."))
 	b.WriteString("\n\n")
 
-	for i, l := range Levels {
-		unlocked := LevelUnlocked(i, m.cleared)
+	for i, c := range Chapters {
+		unlocked := ChapterUnlocked(i, m.cleared)
+		done := ChapterCleared(i, m.cleared)
 
-		marker := " "
-		if i == m.cursor {
-			marker = ">"
+		// The warm-up has no number, so it is indented to keep every title
+		// starting in the same column.
+		name := "   " + c.Title
+		if c.Num > 0 {
+			name = fmt.Sprintf("%d. %s", c.Num, c.Title)
 		}
-		badge := ui.BadgeLock()
-		switch {
-		case i < m.cleared:
-			badge = ui.BadgeDone()
-		case unlocked:
-			badge = ui.BadgeOpen()
-		}
+		fmt.Fprintf(&b, "%s %s %s %s\n",
+			marker(i == m.chapter),
+			badgeFor(done == len(c.Levels), unlocked),
+			rowTitle(name, 36, i == m.chapter, unlocked),
+			ui.Dim.Render(fmt.Sprintf("%d/%d", done, len(c.Levels))))
+	}
 
-		title := fmt.Sprintf("%-26s", l.Title)
-		if i == m.cursor {
-			title = ui.Selected.Render(title)
-		} else if !unlocked {
-			title = ui.Locked.Render(title)
-		}
-		fmt.Fprintf(&b, "%s %s %s %s\n", marker, badge, title,
+	b.WriteString("\n")
+	if ChapterUnlocked(m.chapter, m.cleared) {
+		b.WriteString(ui.Muted.Render(Chapters[m.chapter].Blurb))
+	} else {
+		b.WriteString(ui.Dim.Render("Finish the chapter above to open this one."))
+	}
+	b.WriteString(ui.Help.Render("up/down choose \u00b7 enter open \u00b7 esc back"))
+	return b.String()
+}
+
+func (m *model) viewLevels() string {
+	c := Chapters[m.chapter]
+
+	var b strings.Builder
+	name := c.Title
+	if c.Num > 0 {
+		name = fmt.Sprintf("Chapter %d. %s", c.Num, c.Title)
+	}
+	b.WriteString(ui.Title.Render(name))
+	b.WriteString("\n")
+	b.WriteString(ui.Subtitle.Render(c.Blurb))
+	b.WriteString("\n\n")
+
+	for i, l := range c.Levels {
+		flat := LevelIndex(m.chapter, i)
+		unlocked := LevelUnlocked(flat, m.cleared)
+		fmt.Fprintf(&b, "%s %s %s %s\n",
+			marker(i == m.cursor),
+			badgeFor(flat < m.cleared, unlocked),
+			rowTitle(l.Title, 28, i == m.cursor, unlocked),
 			ui.Dim.Render(fmt.Sprintf("%d questions", l.Questions)))
 	}
 
 	b.WriteString("\n")
-	if LevelUnlocked(m.cursor, m.cleared) {
-		b.WriteString(ui.Muted.Render(Levels[m.cursor].Hint))
+	if LevelUnlocked(LevelIndex(m.chapter, m.cursor), m.cleared) {
+		b.WriteString(ui.Muted.Render(c.Levels[m.cursor].Hint))
 	} else {
 		b.WriteString(ui.Dim.Render("Pass the level above to open this one."))
 	}
-	b.WriteString(ui.Help.Render("up/down choose · enter play · esc back"))
+	b.WriteString(ui.Help.Render("up/down choose \u00b7 enter play \u00b7 esc chapters"))
 	return b.String()
 }
 
@@ -293,7 +392,7 @@ func (m *model) viewCorrection() string {
 	fmt.Fprintf(&b, "      %s %s %s\n",
 		ui.Bad.Render(m.missedQ.Prompt),
 		askJoin(m.missedQ),
-		ui.Good.Render(fmt.Sprintf("%d", m.missedQ.Answer)))
+		ui.Good.Render(m.missedQ.Answer.String()))
 	b.WriteString("\n")
 	b.WriteString(ui.Muted.Render("      Not quite. Have a look at that one."))
 

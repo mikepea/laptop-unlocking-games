@@ -83,6 +83,35 @@ appears in no file — each of these is unwinnable in a way a child would read a
 their own failure, so each has an invariant test that re-derives the answer
 independently of the code that produced it.
 
+Maths Sprint is where that is done most thoroughly, because it has the most
+generators. `maths.answerCheckers` maps every level to a function that reads
+the question off the screen and works it out again — through an exact-rational
+expression evaluator for the levels that print a sum, and by pulling the
+numbers out of the sentence for the ones that print a word problem. A level
+missing from that map fails the test, so a new level cannot be added without a
+check. Nothing in the checkers shares code with the generator it checks: the
+conversion factors, the prime tests and the divisor counts are all written out
+a second time on purpose.
+
+### Answers in Maths Sprint
+
+`maths.Answer` is an exact rational plus a `Form` saying how it has to be
+written: a whole number, a fraction in lowest terms, or a decimal. It is not a
+float, so `0.1 + 0.2` is `0.3` and nobody is marked wrong by a rounding error.
+The `Form` is what lets chapter 4 refuse `0.75` as an answer to `1/4 + 1/2`
+and chapter 6 refuse `3/4` — in both cases the shape of the answer is the
+thing being taught. Everywhere else `Form` is `FormWhole` and any equal value
+passes.
+
+### Chapters
+
+Maths Sprint's levels are grouped into `maths.Chapters`, which follow the Art
+of Problem Solving *Prealgebra* book, and flattened into `maths.Levels` for
+progression. `GameStats.LessonsCleared` is an index into the flat list, so a
+level may be appended to the end of a chapter but never inserted in front of
+one already there: that would silently hand out, or take away, progress nobody
+earned.
+
 ### Scoring shape
 
 All five games pay on the same curve, so points mean roughly the same thing

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math"
 	"math/rand/v2"
-	"strconv"
 	"time"
 )
 
@@ -81,8 +80,7 @@ func (rd *round) submit(answer string) bool {
 	rd.start()
 
 	q := rd.current()
-	got, err := strconv.Atoi(answer)
-	ok := err == nil && got == q.Answer
+	ok := q.Answer.Matches(answer)
 	if ok {
 		rd.correct++
 	} else {
@@ -140,7 +138,7 @@ func (rd *round) notes() []string {
 			out = append(out, fmt.Sprintf("...and %d more", len(rd.missed)-maxNotes))
 			break
 		}
-		out = append(out, fmt.Sprintf("%s = %d", q.Prompt, q.Answer))
+		out = append(out, fmt.Sprintf("%s = %s", q.Prompt, q.Answer))
 	}
 	return out
 }
