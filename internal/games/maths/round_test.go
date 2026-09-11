@@ -206,3 +206,107 @@ func TestCuratedLevelsAreWellFormed(t *testing.T) {
 		}
 	}
 }
+
+// A wrong answer sends the question to the back of the queue for one more go.
+// The point is that the correction screen has just shown the right answer, so
+// the second attempt is a chance to use what was read there.
+
+func TestAWrongAnswerSendsTheQuestionRound(t *testing.T) {
+	rd := newRound(testLevel(), games.NewTestRand(1)) // 1+1, 2+1, 3+1, 4+1
+
+	rd.submit("99") // 1 + 1, wrong
+	if !rd.requeued {
+		t.Fatal("a wrong answer on the first pass was not sent round again")
+	}
+	if len(rd.questions) != 5 {
+		t.Fatalf("round has %d questions, want the missed one added back", len(rd.questions))
+	}
+	if got, want := rd.questions[4].Prompt, "1 + 1"; got != want {
+		t.Errorf("question sent round is %q, want %q", got, want)
+	}
+
+	// Everything else right, so the only thing left is the second attempt.
+	for i := 2; i <= 4; i++ {
+		if !rd.submit(strconv.Itoa(i + 1)) {
+			t.Fatalf("question %d graded wrong", i)
+		}
+	}
+	if rd.done {
+		t.Fatal("round finished without asking the missed question again")
+	}
+	if got := rd.current().Prompt; got != "1 + 1" {
+		t.Fatalf("after the first pass the question is %q, want the missed one", got)
+	}
+	if !rd.submit("2") {
+		t.Fatal("the second attempt was graded wrong")
+	}
+	if !rd.done {
+		t.Fatal("round did not finish after the second attempt")
+	}
+	// Four right out of five asked: the second go counts, and so does the
+	// fact that it took two.
+	if got, want := rd.accuracy(), 0.8; got != want {
+		t.Errorf("accuracy = %v, want %v", got, want)
+	}
+}
+
+func TestAQuestionIsOnlySentRoundOnce(t *testing.T) {
+	rd := newRound(testLevel(), games.NewTestRand(1))
+	for i := 0; i < 4; i++ {
+		rd.submit("99") // every first attempt wrong
+	}
+	if len(rd.questions) != 8 {
+		t.Fatalf("round has %d questions, want 4 plus 4 second attempts", len(rd.questions))
+	}
+	for i := 0; i < 4; i++ {
+		rd.submit("99") // every second attempt wrong too
+		if rd.requeued {
+			t.Fatal("a second attempt was sent round a third time")
+		}
+	}
+	if !rd.done {
+		t.Fatal("round did not finish once the second attempts were used up")
+	}
+	if len(rd.questions) != 8 {
+		t.Fatalf("round grew to %d questions after the second pass", len(rd.questions))
+	}
+	if rd.accuracy() != 0 {
+		t.Errorf("accuracy = %v, want 0 when nothing was ever right", rd.accuracy())
+	}
+}
+
+func TestNotesListAMissedQuestionOnce(t *testing.T) {
+	rd := newRound(testLevel(), games.NewTestRand(1))
+	// Miss the first question twice and answer the rest correctly.
+	rd.submit("99")
+	for i := 2; i <= 4; i++ {
+		rd.submit(strconv.Itoa(i + 1))
+	}
+	rd.submit("99")
+
+	notes := rd.notes()
+	if len(notes) != 1 {
+		t.Fatalf("notes = %v, want the one missed question listed once", notes)
+	}
+	if !strings.Contains(notes[0], "1 + 1 = 2") {
+		t.Errorf("note %q does not show the question and its answer", notes[0])
+	}
+}
+
+// A round can never run away: every question is asked at most twice, so the
+// worst case is exactly double the length it started at.
+func TestARoundCanAtWorstDoubleInLength(t *testing.T) {
+	for _, c := range Chapters {
+		for _, l := range c.Levels {
+			rd := newRound(l, games.NewTestRand(3))
+			started := len(rd.questions)
+			for !rd.done {
+				rd.submit("-12345") // never right anywhere
+			}
+			if got := len(rd.questions); got != 2*started {
+				t.Errorf("level %q: round of %d became %d, want %d",
+					l.Title, started, got, 2*started)
+			}
+		}
+	}
+}
