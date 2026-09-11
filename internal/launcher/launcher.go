@@ -118,6 +118,13 @@ func (m *Model) checkForUpdate() tea.Msg {
 }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	// Every message the terminal produces passes through here on its way to
+	// the menu or to whichever game is running, which makes this the one
+	// place worth normalising a key in.
+	if key, ok := msg.(tea.KeyMsg); ok {
+		msg = normaliseEnter(key)
+	}
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width, m.height = msg.Width, msg.Height
@@ -156,6 +163,24 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateKey(key)
 	}
 	return m, nil
+}
+
+// normaliseEnter makes the keypad's Enter key mean what the main Return key
+// means.
+//
+// A terminal sends a carriage return for Return and, depending on the keymap,
+// a line feed for the keypad's Enter. Bubble Tea calls the first one "enter"
+// and the second one "ctrl+j", so a game that waits for tea.KeyEnter ignores
+// the keypad entirely -- which is the key a child answering a maths question
+// has their hand on, having just typed the number one-handed.
+//
+// Nothing in this program binds ctrl+j, so there is nothing to lose by
+// treating it as Return everywhere.
+func normaliseEnter(key tea.KeyMsg) tea.KeyMsg {
+	if key.Type == tea.KeyCtrlJ {
+		return tea.KeyMsg{Type: tea.KeyEnter, Alt: key.Alt}
+	}
+	return key
 }
 
 func (m *Model) updateKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {

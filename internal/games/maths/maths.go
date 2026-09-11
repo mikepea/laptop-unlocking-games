@@ -394,7 +394,13 @@ func (m *model) viewCorrection() string {
 		askJoin(m.missedQ),
 		ui.Good.Render(m.missedQ.Answer.String()))
 	b.WriteString("\n")
-	b.WriteString(ui.Muted.Render("      Not quite. Have a look at that one."))
+	// Say that it is coming back. Otherwise the total on the header line
+	// going up by one looks like the game losing count.
+	note := "      Not quite. Have a look at that one."
+	if m.rd.requeued {
+		note = "      Not quite. Have a look -- this one comes round again at the end."
+	}
+	b.WriteString(ui.Muted.Render(note))
 
 	b.WriteString("\n\n")
 	b.WriteString(m.scoreLine())

@@ -232,3 +232,102 @@ func TestMenuLocksGamesBehindTheirStage(t *testing.T) {
 		t.Error("quit is not the last menu item")
 	}
 }
+
+// The keypad's Enter key arrives as a line feed rather than a carriage
+// return, which Bubble Tea reports as ctrl+j. Everything below the launcher
+// waits for tea.KeyEnter, so without normalising it here the keypad is dead
+// in every game -- and the keypad is where a hand answering a maths question
+// already is.
+
+func TestKeypadEnterIsTreatedAsReturn(t *testing.T) {
+	got := normaliseEnter(tea.KeyMsg{Type: tea.KeyCtrlJ})
+	if got.Type != tea.KeyEnter {
+		t.Fatalf("line feed came through as %q, want enter", got.String())
+	}
+	if got.String() != "enter" {
+		t.Fatalf("normalised key reads as %q, want %q", got.String(), "enter")
+	}
+}
+
+func TestNormaliseEnterLeavesEveryOtherKeyAlone(t *testing.T) {
+	for _, key := range []tea.KeyMsg{
+		{Type: tea.KeyEnter},
+		{Type: tea.KeyEsc},
+		{Type: tea.KeyUp},
+		{Type: tea.KeyBackspace},
+		{Type: tea.KeyCtrlC},
+		{Type: tea.KeyRunes, Runes: []rune{'7'}},
+	} {
+		if got := normaliseEnter(key); got.String() != key.String() {
+			t.Errorf("%q was rewritten to %q", key.String(), got.String())
+		}
+	}
+}
+
+// The normalising has to happen on the way in, not in one game's key handler,
+// or the next game added quietly loses the keypad again.
+func TestKeypadEnterOpensAGameFromTheMenu(t *testing.T) {
+	m, _ := newTestModel(t)
+	if m.state != stateMenu {
+		t.Fatalf("expected to start on the menu, got state %v", m.state)
+	}
+
+	next, _ := m.Update(tea.KeyMsg{Type: tea.KeyCtrlJ})
+	after := next.(*Model)
+	if after.state != stateGame || after.active == nil {
+		t.Fatal("keypad enter did not start the game the cursor was on")
+	}
+}
+
+// recordingGame is a game that does nothing but remember the keys it was
+// handed, so a test can see what a running game actually receives.
+type recordingGame struct{ model *recordingModel }
+
+func (g *recordingGame) ID() string    { return "recorder" }
+func (g *recordingGame) Title() string { return "Recorder" }
+func (g *recordingGame) Blurb() string { return "Remembers what it was sent." }
+func (g *recordingGame) Stage() string { return "typing" }
+
+func (g *recordingGame) New(*profile.Profile) tea.Model {
+	g.model = &recordingModel{}
+	return g.model
+}
+
+type recordingModel struct{ keys []string }
+
+func (m *recordingModel) Init() tea.Cmd { return nil }
+func (m *recordingModel) View() string  { return "recording" }
+
+func (m *recordingModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if key, ok := msg.(tea.KeyMsg); ok {
+		m.keys = append(m.keys, key.String())
+	}
+	return m, nil
+}
+
+// The game that is running has to see "enter" too, not just the menu. This is
+// the path a maths answer takes.
+func TestKeypadEnterReachesTheRunningGameAsEnter(t *testing.T) {
+	store := profile.NewStore(filepath.Join(t.TempDir(), "profile.json"))
+	prof := profile.New("kiddo")
+	recorder := &recordingGame{}
+	m := New(Options{
+		Store:   store,
+		Profile: prof,
+		Games:   games.NewRegistry(recorder),
+		Ledger:  points.NewLocal(prof),
+	})
+
+	next, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter}) // open it from the menu
+	m = next.(*Model)
+	if m.state != stateGame {
+		t.Fatal("the recording game did not open")
+	}
+
+	next, _ = m.Update(tea.KeyMsg{Type: tea.KeyCtrlJ}) // the keypad's Enter
+	m = next.(*Model)
+
+	if got := recorder.model.keys; len(got) != 1 || got[0] != "enter" {
+		t.Fatalf("the running game was sent %v, want [enter]", got)
+	}
+}

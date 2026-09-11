@@ -13,9 +13,18 @@ func fmtQ(a int, op string, b int) string { return fmt.Sprintf("%d %s %d", a, op
 type round struct {
 	level     Level
 	questions []Question
+	// firstPass is how many questions the round started with. A wrong answer
+	// sends its question to the back of the queue, so anything at or past
+	// this index is already a second attempt -- and a second attempt is not
+	// sent round again.
+	firstPass int
 
 	idx     int
 	correct int
+	// requeued says whether the question just answered is coming back. The
+	// correction screen says so, which is what makes the growing total on
+	// the header line make sense.
+	requeued bool
 	// missed keeps the questions that were answered wrong, in order, for the
 	// "worth another look" list on the results screen.
 	missed []Question
@@ -43,7 +52,7 @@ func newRound(l Level, r *rand.Rand) *round {
 			qs[i] = l.Gen(r)
 		}
 	}
-	return &round{level: l, questions: qs, now: time.Now}
+	return &round{level: l, questions: qs, firstPass: len(qs), now: time.Now}
 }
 
 // current is the question being asked.
@@ -73,6 +82,13 @@ func (rd *round) start() {
 
 // submit grades an answer and moves on. It reports whether the answer was
 // right; a blank or unparseable answer is simply wrong, not an error.
+//
+// A wrong answer is not the end of that question. It goes to the back of the
+// queue for one more go, after the correction screen has shown the right
+// answer -- which is the difference between being told you got it wrong and
+// being given the chance to use what you were just told. Once only: a
+// question that comes back and is missed again is a question that needs a
+// person, not another go.
 func (rd *round) submit(answer string) bool {
 	if rd.done {
 		return false
@@ -81,10 +97,15 @@ func (rd *round) submit(answer string) bool {
 
 	q := rd.current()
 	ok := q.Answer.Matches(answer)
+	rd.requeued = false
 	if ok {
 		rd.correct++
 	} else {
 		rd.missed = append(rd.missed, q)
+		if rd.idx < rd.firstPass {
+			rd.questions = append(rd.questions, q)
+			rd.requeued = true
+		}
 	}
 
 	rd.idx++
@@ -126,16 +147,30 @@ func (rd *round) score() int { return scoreOf(rd.correct, rd.idx, rd.elapsed()) 
 
 // notes lists the missed questions with their answers, so the results screen
 // can show what to look at again.
+//
+// A question missed on the way round and missed again on its second go is
+// still one thing to look at, so the list is deduplicated.
 func (rd *round) notes() []string {
 	if len(rd.missed) == 0 {
 		return nil
 	}
+	var unique []Question
+	seen := map[string]bool{}
+	for _, q := range rd.missed {
+		key := q.Context + "\x00" + q.Prompt
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
+		unique = append(unique, q)
+	}
+
 	// Anything longer than this is a wall of text rather than a lesson.
 	const maxNotes = 6
-	out := make([]string, 0, maxNotes)
-	for _, q := range rd.missed {
+	out := make([]string, 0, maxNotes+1)
+	for _, q := range unique {
 		if len(out) == maxNotes {
-			out = append(out, fmt.Sprintf("...and %d more", len(rd.missed)-maxNotes))
+			out = append(out, fmt.Sprintf("...and %d more", len(unique)-maxNotes))
 			break
 		}
 		out = append(out, fmt.Sprintf("%s = %s", q.Prompt, q.Answer))

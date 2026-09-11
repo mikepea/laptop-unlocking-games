@@ -88,6 +88,17 @@ fraction-form answer refuses the decimal of the same value and vice versa,
 because in chapters 4 and 6 the shape of the answer is the thing being
 taught. Answers must fit the eight-character field.
 
+**A maths round grows as it is played.** A wrong answer puts its question back
+at the end of the queue for one more go (`round.firstPass` is where the second
+attempts start), so `len(round.questions)` changes mid-round and both attempts
+count towards accuracy. Nothing may cache the round length.
+
+**Key handling normalises in one place.** `launcher.normaliseEnter` rewrites
+ctrl+j (the line feed the keypad's Enter sends) to `tea.KeyEnter` before any
+message reaches the menu or a game. Games switch on `tea.KeyEnter` and stay
+unaware of it; do not re-handle it per game, or the next game added loses the
+keypad.
+
 **`View()` runs at least once on a finished round.** Bubble Tea renders the
 model it was handed before `games.Finish`'s message swaps it out, so accessors
 like `round.current()` must clamp rather than panic when the index is one past
