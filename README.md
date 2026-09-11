@@ -11,7 +11,7 @@ Steam on it. Everything above the first rung is hidden until it is reached.
 | game | opens at | teaches |
 | ---- | -------- | ------- |
 | **Typing Trainer** | free | home row through full sentences, with live WPM and accuracy |
-| **Maths Sprint** | 250 | addition, subtraction, times tables and division, then algebra: solving for x, substitution, collecting and factorising |
+| **Maths Sprint** | 250 | number facts, then the first nine chapters of AoPS Prealgebra: negatives and order of operations, exponents, number theory, fractions, equations, decimals, ratios, percents, square roots |
 | **Spelling Bee** | 550 | a sentence appears with one word picked out, both vanish, and the word has to be written from memory |
 | **Code Breaker** | 900 | deduction: crack a hidden code from exact/near feedback |
 | **Trace the Code** | 1150 | read a short program and say what it prints: variables, reassignment, loops, if |
@@ -19,6 +19,20 @@ Steam on it. Everything above the first rung is hidden until it is reached.
 
 Shell Quest sits directly below the **shell** rung on purpose: by the time the
 real prompt is handed over, the commands should already be familiar.
+
+### Maths Sprint and the book
+
+Maths Sprint follows the Art of Problem Solving *Prealgebra* book. The level
+menu is two screens: a contents page of chapters, then the levels inside one.
+Chapter numbers are the book's, so "do chapter 4 tonight" means the same thing
+at the kitchen table and on the laptop. A warm-up chapter of number facts sits
+in front of chapter 1, and chapters 10 to 15 -- angles, area, triangles,
+statistics and counting -- are deliberately not built: they want figures drawn,
+and this runs on a virtual console.
+
+Answers are typed as whole numbers, fractions (`3/4`, in lowest terms) or
+decimals (`0.375`). A level that is teaching fractions refuses the decimal of
+the same value, and the other way round.
 
 Trace the Code picks up where Maths Sprint's algebra leaves off. "Putting
 Numbers In" asks what `3x + 2` is when x is 4; Trace the Code asks the same

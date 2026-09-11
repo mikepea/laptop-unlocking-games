@@ -6,15 +6,17 @@ import (
 	"strings"
 )
 
-// The algebra half of the curriculum. It sits on top of the number facts, but
-// deliberately keeps the numbers small: the skill being learned is what a
-// letter means, not arithmetic under pressure.
+// Chapter 5 is equations and inequalities: letters standing in for numbers,
+// and the one move that finds them, which is doing the same thing to both
+// sides. It deliberately keeps the numbers small -- the skill being learned is
+// what a letter means, not arithmetic under pressure.
 //
-// Every answer is still an int. That is the constraint that keeps the whole
-// game — one field, one number, instant marking — working unchanged, and it is
-// why "simplify this" is asked as a short sequence of steps rather than as one
-// box you type "6(x + 3y)" into. Each step is a win on its own, which is the
-// same reason a round is twelve short questions instead of one long one.
+// Every answer in this chapter is a whole number. Not because the game cannot
+// take a fraction any more, but because an equation whose solution is 7/3 is
+// testing chapter 4 in the middle of chapter 5. It is also why "simplify this"
+// is asked as a short sequence of steps rather than as one box you type
+// "6(x + 3y)" into. Each step is a win on its own, which is the same reason a
+// round is twelve short questions instead of one long one.
 //
 // Notation is the conventional 3x rather than 3*x: this is the form he will
 // meet at school. The pseudo-code game is where the * form belongs, and seeing
@@ -36,18 +38,7 @@ func term(n int, v string) string {
 // expr joins terms with the plus signs written out, e.g. "3x + 18y".
 func expr(parts ...string) string { return strings.Join(parts, " + ") }
 
-// gcd is Euclid, used to check a factorisation is the fullest one available.
-func gcd(a, b int) int {
-	for b != 0 {
-		a, b = b, a%b
-	}
-	if a < 0 {
-		return -a
-	}
-	return a
-}
-
-var algebraLevels = []Level{
+var equationLevels = []Level{
 	{
 		Title:       "Missing Number",
 		Hint:        "The same sums as before, with a hole in them. What fills it?",
@@ -61,11 +52,11 @@ var algebraLevels = []Level{
 			b := r.IntN(12) + 2
 			switch r.IntN(3) {
 			case 0:
-				return Question{Context: fmt.Sprintf("%d + ? = %d", a, a+b), Prompt: "?", Answer: b}
+				return Question{Context: fmt.Sprintf("%d + ? = %d", a, a+b), Prompt: "?", Answer: Int(b)}
 			case 1:
-				return Question{Context: fmt.Sprintf("? + %d = %d", b, a+b), Prompt: "?", Answer: a}
+				return Question{Context: fmt.Sprintf("? + %d = %d", b, a+b), Prompt: "?", Answer: Int(a)}
 			default:
-				return Question{Context: fmt.Sprintf("%d - ? = %d", a+b, a), Prompt: "?", Answer: b}
+				return Question{Context: fmt.Sprintf("%d - ? = %d", a+b, a), Prompt: "?", Answer: Int(b)}
 			}
 		},
 	},
@@ -79,19 +70,19 @@ var algebraLevels = []Level{
 			switch r.IntN(4) {
 			case 0:
 				b := r.IntN(10) + 1
-				return Question{Context: fmt.Sprintf("x + %d = %d", b, x+b), Prompt: "x", Answer: x}
+				return Question{Context: fmt.Sprintf("x + %d = %d", b, x+b), Prompt: "x", Answer: Int(x)}
 			case 1:
 				// Take away no more than there is: x - 9 = -2 drags negative
 				// numbers into a level that is only meant to be teaching what
 				// a letter stands for.
 				b := r.IntN(x) + 1
-				return Question{Context: fmt.Sprintf("x - %d = %d", b, x-b), Prompt: "x", Answer: x}
+				return Question{Context: fmt.Sprintf("x - %d = %d", b, x-b), Prompt: "x", Answer: Int(x)}
 			case 2:
 				a := r.IntN(9) + 2
-				return Question{Context: fmt.Sprintf("%s = %d", term(a, "x"), a*x), Prompt: "x", Answer: x}
+				return Question{Context: fmt.Sprintf("%s = %d", term(a, "x"), a*x), Prompt: "x", Answer: Int(x)}
 			default:
 				a := r.IntN(9) + 2
-				return Question{Context: fmt.Sprintf("x / %d = %d", a, x), Prompt: "x", Answer: a * x}
+				return Question{Context: fmt.Sprintf("x / %d = %d", a, x), Prompt: "x", Answer: Int(a * x)}
 			}
 		},
 	},
@@ -109,13 +100,13 @@ var algebraLevels = []Level{
 				// cannot, or the right-hand side goes negative.
 				return Question{
 					Context: fmt.Sprintf("%s + %d = %d", term(a, "x"), b, a*x+b),
-					Prompt:  "x", Answer: x,
+					Prompt:  "x", Answer: Int(x),
 				}
 			}
 			b = r.IntN(a*x) + 1
 			return Question{
 				Context: fmt.Sprintf("%s - %d = %d", term(a, "x"), b, a*x-b),
-				Prompt:  "x", Answer: x,
+				Prompt:  "x", Answer: Int(x),
 			}
 		},
 	},
@@ -131,14 +122,14 @@ var algebraLevels = []Level{
 			if r.IntN(2) == 0 {
 				return Question{
 					Context: fmt.Sprintf("x = %d", x),
-					Prompt:  fmt.Sprintf("%s + %d", term(a, "x"), b), Answer: a*x + b,
+					Prompt:  fmt.Sprintf("%s + %d", term(a, "x"), b), Answer: Int(a*x + b),
 				}
 			}
 			y := r.IntN(7) + 2
 			c := r.IntN(5) + 2
 			return Question{
 				Context: fmt.Sprintf("x = %d, y = %d", x, y),
-				Prompt:  expr(term(a, "x"), term(c, "y")), Answer: a*x + c*y,
+				Prompt:  expr(term(a, "x"), term(c, "y")), Answer: Int(a*x + c*y),
 			}
 		},
 	},
@@ -155,12 +146,61 @@ var algebraLevels = []Level{
 				c := r.IntN(6) + 1
 				return Question{
 					Context: fmt.Sprintf("%s = ?x", expr(term(a, "x"), term(c, "y"), term(b, "x"))),
-					Prompt:  "?", Answer: a + b,
+					Prompt:  "?", Answer: Int(a + b),
 				}
 			}
 			return Question{
 				Context: fmt.Sprintf("%s = ?x", expr(term(a, "x"), term(b, "x"))),
-				Prompt:  "?", Answer: a + b,
+				Prompt:  "?", Answer: Int(a + b),
+			}
+		},
+	},
+	{
+		Title:       "Letters on Both Sides",
+		Hint:        "Get all the xs onto one side first. Take the smaller lot off both sides.",
+		Questions:   10,
+		MinAccuracy: 0.70,
+		Gen: func(r *rand.Rand) Question {
+			x := r.IntN(9) + 1
+			// The bigger coefficient goes on the left, so taking the smaller
+			// lot off both sides never leaves a negative number of xs.
+			a := r.IntN(5) + 3 // 3..7
+			c := r.IntN(a-1) + 1
+			b := r.IntN(10) + 1
+			// a*x + b = c*x + d, so d is whatever makes both sides agree, and
+			// it is positive because a is bigger than c.
+			d := (a-c)*x + b
+			return Question{
+				Context: fmt.Sprintf("%s + %d = %s + %d", term(a, "x"), b, term(c, "x"), d),
+				Prompt:  "x", Answer: Int(x),
+			}
+		},
+	},
+	{
+		Title:       "Inequalities",
+		Hint:        "Solve it as if it were an equals sign, then ask which whole numbers actually fit.",
+		Questions:   10,
+		MinAccuracy: 0.70,
+		Gen: func(r *rand.Rand) Question {
+			a := r.IntN(6) + 2 // 2..7
+			b := r.IntN(10) + 1
+			k := r.IntN(9) + 2
+			// The limit deliberately does not always land on a boundary. When
+			// it does the answer is one either side of the obvious number;
+			// when it does not, it is the obvious number itself, and telling
+			// those two apart is the whole of the level.
+			limit := a*k + b + r.IntN(a)
+			if r.IntN(2) == 0 {
+				return Question{
+					Context: fmt.Sprintf("%s + %d < %d", term(a, "x"), b, limit),
+					Prompt:  "x is a whole number. What is the biggest it can be?",
+					Answer:  Int((limit - b - 1) / a),
+				}
+			}
+			return Question{
+				Context: fmt.Sprintf("%s + %d > %d", term(a, "x"), b, limit),
+				Prompt:  "x is a whole number. What is the smallest it can be?",
+				Answer:  Int((limit-b)/a + 1),
 			}
 		},
 	},
@@ -217,12 +257,12 @@ func simplifySteps(r *rand.Rand) []Question {
 	collected := expr(term(totalX, "x"), term(totalY, "y"))
 
 	return []Question{
-		{Context: scattered, Prompt: "How many x altogether?", Answer: totalX},
-		{Context: scattered, Prompt: "How many y altogether?", Answer: totalY},
-		{Context: collected, Prompt: "What is the biggest number that divides both?", Answer: g},
+		{Context: scattered, Prompt: "How many x altogether?", Answer: Int(totalX)},
+		{Context: scattered, Prompt: "How many y altogether?", Answer: Int(totalY)},
+		{Context: collected, Prompt: "What is the biggest number that divides both?", Answer: Int(g)},
 		{
 			Context: fmt.Sprintf("%s = %d(%s + ?y)", collected, g, term(ix, "x")),
-			Prompt:  "?", Answer: iy,
+			Prompt:  "?", Answer: Int(iy),
 		},
 	}
 }

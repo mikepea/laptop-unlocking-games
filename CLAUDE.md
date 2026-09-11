@@ -67,9 +67,26 @@ The progress-bar block characters are the single exception;
 question whose prompt and answer disagree, a spelling word the answer field's
 filter would reject, a lesson line containing a character not on a keyboard, a
 Shell Quest secret present in no file — each is unwinnable in a way a child
-reads as their own failure. See `maths/algebra_test.go`,
+reads as their own failure. See `maths/curriculum_test.go`,
 `spelling/round_test.go` (`isTypeable`) and
 `typing/session_test.go` (`TestCuratedLessonsAreWellFormed`) for the pattern.
+
+**Adding a maths level means adding a checker.** `maths.Chapters` follows the
+AoPS Prealgebra book; `maths.Levels` is that flattened, and
+`GameStats.LessonsCleared` indexes the flat list, so append to the end of a
+chapter and never insert. Every level must have an entry in
+`maths.answerCheckers` (`curriculum_test.go`, `checkers_test.go`) or the
+test suite fails. The checker re-reads the
+question off the screen — via the exact-rational evaluator in `eval_test.go`
+for anything that prints a sum, or by pulling numbers out of the sentence —
+and must not share code with the generator.
+
+**A maths answer is not an int.** `maths.Answer` is an exact rational plus a
+`Form`: `Int(7)`, `Fraction(3, 4)` (typed in lowest terms) or
+`Decimal(375, 3)` (0.375, kept as a scaled integer, never a float). A
+fraction-form answer refuses the decimal of the same value and vice versa,
+because in chapters 4 and 6 the shape of the answer is the thing being
+taught. Answers must fit the eight-character field.
 
 **`View()` runs at least once on a finished round.** Bubble Tea renders the
 model it was handed before `games.Finish`'s message swaps it out, so accessors

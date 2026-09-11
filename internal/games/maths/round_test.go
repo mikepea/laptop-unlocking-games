@@ -1,7 +1,6 @@
 package maths
 
 import (
-	"errors"
 	"math/rand/v2"
 	"strconv"
 	"strings"
@@ -10,8 +9,6 @@ import (
 
 	"github.com/mikepea/laptop-unlocking-games/internal/games"
 )
-
-var errBadPrompt = errors.New("prompt is not an arithmetic question")
 
 // testLevel yields the predictable questions 1+1, 2+1, 3+1, 4+1, so a test can
 // answer them without knowing anything about the real generators.
@@ -23,71 +20,16 @@ func testLevel() Level {
 		MinAccuracy: 0.75,
 		Gen: func(_ *rand.Rand) Question {
 			n++
-			return Question{Prompt: fmtQ(n, "+", 1), Answer: n + 1}
+			return Question{Prompt: fmtQ(n, "+", 1), Answer: Int(n + 1)}
 		},
 	}
-}
-
-func TestGeneratedQuestionsAgreeWithTheirPrompts(t *testing.T) {
-	// The prompt and the answer are produced separately in every generator, so
-	// a wrong operator would show one sum and mark another. Re-derive the
-	// answer from the prompt and check they match.
-	r := games.NewTestRand(7)
-	for _, l := range arithmeticLevels {
-		for i := 0; i < 300; i++ {
-			q := l.Gen(r)
-			want, err := evalPrompt(q.Prompt)
-			if err != nil {
-				t.Fatalf("level %q produced an unparseable prompt %q: %v", l.Title, q.Prompt, err)
-			}
-			if want != q.Answer {
-				t.Fatalf("level %q: prompt %q says %d, question claims %d", l.Title, q.Prompt, want, q.Answer)
-			}
-			if q.Answer < 0 {
-				t.Fatalf("level %q produced a negative answer: %q = %d", l.Title, q.Prompt, q.Answer)
-			}
-		}
-	}
-}
-
-// evalPrompt works out "7 x 8" independently of the code that built it.
-func evalPrompt(prompt string) (int, error) {
-	parts := strings.Fields(prompt)
-	if len(parts) != 3 {
-		return 0, errBadPrompt
-	}
-	a, err := strconv.Atoi(parts[0])
-	if err != nil {
-		return 0, err
-	}
-	b, err := strconv.Atoi(parts[2])
-	if err != nil {
-		return 0, err
-	}
-	switch parts[1] {
-	case "+":
-		return a + b, nil
-	case "-":
-		return a - b, nil
-	case "x":
-		return a * b, nil
-	case "/":
-		if b == 0 || a%b != 0 {
-			return 0, errBadPrompt
-		}
-		return a / b, nil
-	}
-	return 0, errBadPrompt
 }
 
 func TestDivisionIsAlwaysExact(t *testing.T) {
 	// "Sharing Out" builds its dividend by multiplying, so it can never ask
 	// for a remainder. Guard that, because it is easy to break.
 	r := games.NewTestRand(11)
-	sharing := Levels[5]
-	if sharing.Title != "Sharing Out" {
-		t.Fatalf("expected Levels[5] to be Sharing Out, got %q", sharing.Title)
-	}
+	sharing := levelIn(t, "Warm-Up", "Sharing Out")
 	for i := 0; i < 500; i++ {
 		q := sharing.Gen(r)
 		parts := strings.Fields(q.Prompt)
@@ -100,6 +42,24 @@ func TestDivisionIsAlwaysExact(t *testing.T) {
 			t.Fatalf("%q does not divide exactly", q.Prompt)
 		}
 	}
+}
+
+// levelIn finds a level by chapter and title, so a test does not depend on
+// where in the curriculum it happens to sit.
+func levelIn(t *testing.T, chapter, title string) Level {
+	t.Helper()
+	for _, c := range Chapters {
+		if c.Title != chapter {
+			continue
+		}
+		for _, l := range c.Levels {
+			if l.Title == title {
+				return l
+			}
+		}
+	}
+	t.Fatalf("no level %q in chapter %q", title, chapter)
+	return Level{}
 }
 
 func TestSubmitGradesAndAdvances(t *testing.T) {
@@ -117,7 +77,7 @@ func TestSubmitGradesAndAdvances(t *testing.T) {
 	if got, want := rd.accuracy(), 0.5; got != want {
 		t.Fatalf("accuracy = %v, want %v", got, want)
 	}
-	if len(rd.missed) != 1 || rd.missed[0].Answer != 3 {
+	if n, _ := rd.missed[0].Answer.Whole(); len(rd.missed) != 1 || n != 3 {
 		t.Fatalf("missed = %+v, want the 2 + 1 question", rd.missed)
 	}
 }
@@ -165,7 +125,7 @@ func TestNotesAreCappedAndListAnswers(t *testing.T) {
 	l.Questions = 10
 	rd := newRound(l, games.NewTestRand(1))
 	for i := 0; i < 10; i++ {
-		rd.submit("-1")
+		rd.submit("-99")
 	}
 
 	notes := rd.notes()
@@ -217,7 +177,15 @@ func TestClockStartsOnFirstInput(t *testing.T) {
 }
 
 func TestCuratedLevelsAreWellFormed(t *testing.T) {
+	seen := map[string]bool{}
 	for i, l := range Levels {
+		// answerCheckers is keyed by title, and so is every test that looks a
+		// level up. Two levels sharing a title would silently leave one of
+		// them unchecked.
+		if seen[l.Title] {
+			t.Errorf("two levels are called %q", l.Title)
+		}
+		seen[l.Title] = true
 		if l.Title == "" {
 			t.Errorf("level %d has no title", i)
 		}
