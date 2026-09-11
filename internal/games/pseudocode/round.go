@@ -18,9 +18,17 @@ import (
 type round struct {
 	level    Level
 	programs []Program
+	// firstPass is how many programs the round started with. A program traced
+	// wrong goes to the back of the queue, so anything at or past this index
+	// is already a second attempt -- and a second attempt is not sent round
+	// again.
+	firstPass int
 
 	idx     int
 	correct int
+	// requeued says whether the program just answered is coming back, so the
+	// correction screen can say so.
+	requeued bool
 	// missed keeps the programs answered wrong, in order, for the "worth
 	// another look" list on the results screen.
 	missed []Program
@@ -38,7 +46,7 @@ func newRound(l Level, r *rand.Rand) *round {
 	for i := range ps {
 		ps[i] = l.Gen(r)
 	}
-	return &round{level: l, programs: ps, now: time.Now}
+	return &round{level: l, programs: ps, firstPass: len(ps), now: time.Now}
 }
 
 // current is the program being traced.
@@ -66,6 +74,12 @@ func (rd *round) start() {
 
 // submit grades an answer and moves on. A blank or unparseable answer is
 // simply wrong, not an error.
+//
+// A program traced wrong goes to the back of the queue for one more go. The
+// correction screen leaves the program on screen next to what it prints, so
+// the second attempt is a chance to walk the same lines again knowing where
+// they end up -- which is the whole skill. Once only: a program missed twice
+// needs a person, not another go.
 func (rd *round) submit(answer string) bool {
 	if rd.done {
 		return false
@@ -75,10 +89,15 @@ func (rd *round) submit(answer string) bool {
 	p := rd.current()
 	got, err := strconv.Atoi(answer)
 	ok := err == nil && got == p.Answer
+	rd.requeued = false
 	if ok {
 		rd.correct++
 	} else {
 		rd.missed = append(rd.missed, p)
+		if rd.idx < rd.firstPass {
+			rd.programs = append(rd.programs, p)
+			rd.requeued = true
+		}
 	}
 
 	rd.idx++
@@ -117,15 +136,29 @@ func (rd *round) passed() bool {
 func (rd *round) score() int { return scoreOf(rd.correct, rd.idx, rd.elapsed()) }
 
 // notes lists the missed programs on one line each, with what they printed.
+//
+// A program missed on the way round and missed again on its second go is
+// still one thing to look at, so the list is deduplicated.
 func (rd *round) notes() []string {
 	if len(rd.missed) == 0 {
 		return nil
 	}
-	const maxNotes = 4 // a traced program is wider than a sum; fewer fit
-	out := make([]string, 0, maxNotes)
+	var unique []Program
+	seen := map[string]bool{}
 	for _, p := range rd.missed {
+		key := oneLine(p)
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
+		unique = append(unique, p)
+	}
+
+	const maxNotes = 4 // a traced program is wider than a sum; fewer fit
+	out := make([]string, 0, maxNotes+1)
+	for _, p := range unique {
 		if len(out) == maxNotes {
-			out = append(out, fmt.Sprintf("...and %d more", len(rd.missed)-maxNotes))
+			out = append(out, fmt.Sprintf("...and %d more", len(unique)-maxNotes))
 			break
 		}
 		out = append(out, fmt.Sprintf("%s  prints %d", oneLine(p), p.Answer))

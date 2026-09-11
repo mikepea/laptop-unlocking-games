@@ -277,3 +277,92 @@ func TestWordSpanMatchesWholeWordsOnly(t *testing.T) {
 		t.Error("a missing word reported a span")
 	}
 }
+
+// A word spelled wrong goes to the back of the queue for one more go, so the
+// correction screen's side-by-side is something to act on rather than just
+// something to read. Once only.
+
+func TestAMisspelledWordComesRoundAgain(t *testing.T) {
+	rd := newRound(testLevel(), games.NewTestRand(1))
+	first := rd.current().Text
+
+	rd.submit("wrong")
+	if !rd.requeued {
+		t.Fatal("a misspelled word was not sent round again")
+	}
+	if len(rd.words) != 5 {
+		t.Fatalf("round has %d words, want the missed one added back", len(rd.words))
+	}
+	if got := rd.words[4].Text; got != first {
+		t.Errorf("word sent round is %q, want %q", got, first)
+	}
+	// The sentence comes with it, so the second attempt is the whole
+	// exercise rather than a bare word.
+	if rd.words[4].Sentence == "" {
+		t.Error("the word came round again without its sentence")
+	}
+
+	for i := 1; i < 4; i++ {
+		if !rd.submit(rd.current().Text) {
+			t.Fatalf("word %d graded wrong", i)
+		}
+	}
+	if rd.done {
+		t.Fatal("round finished without asking the missed word again")
+	}
+	if got := rd.current().Text; got != first {
+		t.Fatalf("after the first pass the word is %q, want the missed one", got)
+	}
+	if !rd.submit(first) {
+		t.Fatal("the second attempt was graded wrong")
+	}
+	if !rd.done {
+		t.Fatal("round did not finish after the second attempt")
+	}
+	if got, want := rd.accuracy(), 0.8; got != want {
+		t.Errorf("accuracy = %v, want %v", got, want)
+	}
+}
+
+func TestAWordIsOnlySentRoundOnce(t *testing.T) {
+	rd := newRound(testLevel(), games.NewTestRand(2))
+	for i := 0; i < 4; i++ {
+		rd.submit("wrong")
+	}
+	if len(rd.words) != 8 {
+		t.Fatalf("round has %d words, want 4 plus 4 second attempts", len(rd.words))
+	}
+	for i := 0; i < 4; i++ {
+		rd.submit("wrong again")
+		if rd.requeued {
+			t.Fatal("a second attempt was sent round a third time")
+		}
+	}
+	if !rd.done {
+		t.Fatal("round did not finish once the second attempts were used up")
+	}
+	if len(rd.words) != 8 {
+		t.Fatalf("round grew to %d words after the second pass", len(rd.words))
+	}
+}
+
+func TestNotesListAMissedWordOnce(t *testing.T) {
+	rd := newRound(testLevel(), games.NewTestRand(3))
+	want := rd.current().Text
+
+	rd.submit("frist")
+	for i := 1; i < 4; i++ {
+		rd.submit(rd.current().Text)
+	}
+	rd.submit("secnod")
+
+	notes := rd.notes()
+	if len(notes) != 1 {
+		t.Fatalf("notes = %v, want the one missed word listed once", notes)
+	}
+	// The first attempt is the one kept: that is the spelling that came to
+	// mind before the right one was on screen.
+	if !strings.Contains(notes[0], want) || !strings.Contains(notes[0], "frist") {
+		t.Errorf("note %q does not show the word and the first thing written", notes[0])
+	}
+}

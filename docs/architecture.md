@@ -122,6 +122,32 @@ paying for speed would push toward answering before the word has been read. Code
 breaker has no partial credit, because a code is cracked or it is not; its bonus
 is for guesses left over.
 
+### Second chances
+
+A wrong answer does not end that question. It goes to the back of the queue
+for one more go, after the correction screen has shown the right answer — the
+difference between being told you got it wrong and being given a chance to use
+what you were just told. Once only: a question missed on its second go needs a
+person, not another go.
+
+Maths Sprint, the Spelling Bee and Trace the Code all do this, each in its own
+`round`, because each already owned one. Spelling reads the sentence out again
+with the word, so the second attempt is the whole exercise; Trace the Code
+leaves the program on screen next to what it prints, so the second attempt is
+walking the same lines knowing where they end up.
+
+Code Breaker does not, and should not. It has no queue of questions: there is
+one code and eight to twelve guesses against it with feedback each time, so a
+wrong guess is already the loop. A "second go" there would just be more
+guesses, which `Level.Guesses` already sets. The typing trainer has no
+discrete questions at all.
+
+Both attempts count, so the accuracy denominator grows with the round. Twelve
+questions with two missed and both recovered is 12 out of 14, not 12 out of 12
+and not 10 out of 12 — a real second chance that still says it took two goes.
+The consequence for code is that the length of the question slice is not fixed
+for the life of a round; `round.firstPass` is.
+
 ## Rendering rules
 
 This runs on a Linux virtual console, not a modern terminal emulator. Two

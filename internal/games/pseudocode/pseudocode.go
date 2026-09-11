@@ -289,7 +289,13 @@ func (m *model) viewCorrection() string {
 		ui.Dim.Render("it prints"),
 		ui.Good.Render(fmt.Sprintf("%d", m.missedP.Answer)))
 	b.WriteString("\n")
-	b.WriteString(ui.Muted.Render("      Not quite. Walk it through one line at a time."))
+	// Say that it is coming back. Otherwise the total on the header line
+	// going up by one looks like the game losing count.
+	note := "      Not quite. Walk it through one line at a time."
+	if m.rd.requeued {
+		note = "      Not quite. Walk it through a line at a time -- it comes round again."
+	}
+	b.WriteString(ui.Muted.Render(note))
 
 	b.WriteString("\n\n")
 	b.WriteString(m.scoreLine())

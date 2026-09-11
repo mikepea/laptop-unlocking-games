@@ -43,19 +43,30 @@ func TestViewAfterFinishingWithACorrectAnswer(t *testing.T) {
 
 func TestViewAfterFinishingWithAWrongAnswer(t *testing.T) {
 	m := startLevel0(t)
-	for !m.rd.done {
-		if m.rd.idx == len(m.rd.programs)-1 {
-			m = answer(t, m, "99999")
+
+	// Answer everything wrong. The first pass sends every program round
+	// again, so the round ends on the last of the second attempts -- which
+	// is the one whose correction screen must not go back to modePlay.
+	for {
+		m = answer(t, m, "99999")
+		if m.mode != modeCorrection {
+			t.Fatalf("a wrong answer did not stop at the correction screen")
+		}
+		_ = m.View()
+
+		finished := m.rd.done
+		next, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+		m = next.(*model)
+		if finished {
 			break
 		}
-		m = answer(t, m, strconv.Itoa(m.rd.current().Answer))
+		if m.mode != modePlay {
+			t.Fatalf("dismissing a correction mid-round left mode %v", m.mode)
+		}
 	}
-	_ = m.View()
 
-	next, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
-	after := next.(*model)
-	if after.mode == modePlay {
+	if m.mode == modePlay {
 		t.Error("returned to modePlay after the round finished")
 	}
-	_ = after.View()
+	_ = m.View()
 }
