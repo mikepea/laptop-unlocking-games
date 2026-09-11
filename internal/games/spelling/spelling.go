@@ -392,7 +392,13 @@ func (m *model) viewCorrection() string {
 	fmt.Fprintf(&b, "      %s %s\n", ui.Dim.Render("it was    "), ui.Good.Render(m.missed.Want))
 
 	b.WriteString("\n")
-	b.WriteString(ui.Muted.Render("      Look at where they differ."))
+	// Say that it is coming back. Otherwise the total on the header line
+	// going up by one looks like the game losing count.
+	note := "      Look at where they differ."
+	if m.rd.requeued {
+		note = "      Look at where they differ. This one comes round again at the end."
+	}
+	b.WriteString(ui.Muted.Render(note))
 
 	b.WriteString("\n\n")
 	b.WriteString(m.scoreLine())

@@ -88,10 +88,12 @@ fraction-form answer refuses the decimal of the same value and vice versa,
 because in chapters 4 and 6 the shape of the answer is the thing being
 taught. Answers must fit the eight-character field.
 
-**A maths round grows as it is played.** A wrong answer puts its question back
-at the end of the queue for one more go (`round.firstPass` is where the second
-attempts start), so `len(round.questions)` changes mid-round and both attempts
-count towards accuracy. Nothing may cache the round length.
+**A round grows as it is played.** In `maths`, `spelling` and `pseudocode` a
+wrong answer puts its question back at the end of the queue for one more go
+(`round.firstPass` is where the second attempts start), so the question slice
+changes length mid-round and both attempts count towards accuracy. Nothing may
+cache the round length. `codebreaker` is deliberately exempt — a wrong guess
+is already its whole loop.
 
 **Key handling normalises in one place.** `launcher.normaliseEnter` rewrites
 ctrl+j (the line feed the keypad's Enter sends) to `tea.KeyEnter` before any

@@ -18,10 +18,18 @@ type missedWord struct {
 type round struct {
 	level Level
 	words []Word
+	// firstPass is how many words the round started with. A word spelled
+	// wrong goes to the back of the queue, so anything at or past this index
+	// is already a second attempt -- and a second attempt is not sent round
+	// again.
+	firstPass int
 
 	idx     int
 	correct int
 	missed  []missedWord
+	// requeued says whether the word just answered is coming back, so the
+	// correction screen can say so.
+	requeued bool
 
 	started   bool
 	startedAt time.Time
@@ -41,7 +49,7 @@ func newRound(l Level, r *rand.Rand) *round {
 	if n > len(pool) {
 		n = len(pool)
 	}
-	return &round{level: l, words: pool[:n], now: time.Now}
+	return &round{level: l, words: pool[:n], firstPass: n, now: time.Now}
 }
 
 // current is the word being asked.
@@ -89,6 +97,13 @@ func (rd *round) start() {
 
 // submit grades an answer and moves on. Comparison ignores case and
 // surrounding space: the skill being tested is which letters, in which order.
+//
+// A word spelled wrong is not done with. It goes to the back of the queue for
+// one more go, after the correction screen has put the two spellings side by
+// side -- which is the difference between being shown where they differ and
+// being given a chance to act on it. The sentence is read out again with it,
+// so the second attempt is the whole exercise, not just the letters. Once
+// only: a word missed twice needs a person, not another go.
 func (rd *round) submit(answer string) bool {
 	if rd.done {
 		return false
@@ -98,10 +113,15 @@ func (rd *round) submit(answer string) bool {
 	want := rd.current()
 	got := strings.TrimSpace(answer)
 	ok := strings.EqualFold(got, want.Text)
+	rd.requeued = false
 	if ok {
 		rd.correct++
 	} else {
 		rd.missed = append(rd.missed, missedWord{Want: want.Text, Got: got})
+		if rd.idx < rd.firstPass {
+			rd.words = append(rd.words, want)
+			rd.requeued = true
+		}
 	}
 
 	rd.idx++
@@ -138,15 +158,30 @@ func (rd *round) score() int { return scoreOf(rd.correct, rd.idx) }
 
 // notes lists what was missed, alongside what was written instead. Seeing the
 // two spellings side by side is the whole lesson.
+//
+// A word missed on the way round and missed again on its second go is still
+// one word to learn, so the list keeps only the first attempt at each: that
+// is the spelling that came to mind unprompted, which is the one worth
+// looking at.
 func (rd *round) notes() []string {
 	if len(rd.missed) == 0 {
 		return nil
 	}
+	var unique []missedWord
+	seen := map[string]bool{}
+	for _, w := range rd.missed {
+		if seen[w.Want] {
+			continue
+		}
+		seen[w.Want] = true
+		unique = append(unique, w)
+	}
+
 	const maxNotes = 6
 	out := make([]string, 0, maxNotes+1)
-	for _, w := range rd.missed {
+	for _, w := range unique {
 		if len(out) == maxNotes {
-			out = append(out, fmt.Sprintf("...and %d more", len(rd.missed)-maxNotes))
+			out = append(out, fmt.Sprintf("...and %d more", len(unique)-maxNotes))
 			break
 		}
 		if w.Got == "" {
