@@ -63,6 +63,7 @@ type Model struct {
 
 	// Results of the run just finished.
 	lastResult  games.Result
+	lastPoints  int
 	lastEarned  []achievements.Achievement
 	lastUnlocks []unlocks.Stage
 
@@ -266,11 +267,12 @@ func (m *Model) apply(r games.Result) {
 		stats.LessonsCleared++
 	}
 
-	if r.Points > 0 && m.ledger != nil {
+	earned := points.FromScore(r.Score, r.Completed)
+	if earned > 0 && m.ledger != nil {
 		award := points.Award{
 			GameID: r.GameID,
 			Round:  r.Round,
-			Points: r.Points,
+			Points: earned,
 			Reason: fmt.Sprintf("%s: %s", r.GameID, r.Round),
 			At:     time.Now().UTC(),
 		}
@@ -280,6 +282,7 @@ func (m *Model) apply(r games.Result) {
 	}
 
 	m.lastResult = r
+	m.lastPoints = earned
 	m.lastEarned = achievements.Evaluate(m.prof, r)
 	m.lastUnlocks = m.syncUnlocks()
 
@@ -436,7 +439,8 @@ func (m *Model) viewResults() string {
 	}
 	row("accuracy", ui.Selected.Render(fmt.Sprintf("%.0f%%", r.Accuracy*100)))
 	row("time", ui.Selected.Render(r.Duration.Round(time.Second).String()))
-	row("points", ui.Gold.Render(fmt.Sprintf("+%d", r.Points)))
+	row("score", ui.Selected.Render(fmt.Sprintf("%d", r.Score)))
+	row("points", ui.Gold.Render(fmt.Sprintf("+%d", m.lastPoints)))
 
 	if len(r.Notes) > 0 {
 		b.WriteString("\n")

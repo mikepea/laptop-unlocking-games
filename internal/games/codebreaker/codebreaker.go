@@ -150,7 +150,6 @@ func (m *model) result() games.Result {
 		Round:      m.pz.level.Title,
 		RoundIndex: m.cursor,
 		Score:      m.pz.score(),
-		Points:     m.pz.score(),
 		Accuracy:   m.pz.efficiency(),
 		Duration:   m.pz.elapsed(),
 		Notes:      m.pz.notes(),

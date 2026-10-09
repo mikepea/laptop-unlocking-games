@@ -11,7 +11,9 @@ type Stage struct {
 	Title string
 	// Blurb is written for the player, not the parent.
 	Blurb string
-	// Cost is the lifetime points needed to reach this stage.
+	// Cost is the lifetime points needed to reach this stage. A point is a
+	// minute of screen time and takes about a minute of play to earn (see
+	// points.ScorePerPoint), so a cost is also roughly minutes of play.
 	Cost int
 }
 
@@ -28,67 +30,67 @@ var Ladder = []Stage{
 		ID:    "arcade",
 		Title: "The Arcade",
 		Blurb: "Maths Sprint opens up. Number facts against the clock.",
-		Cost:  250,
+		Cost:  8,
 	},
 	{
 		ID:    "spelling",
 		Title: "The Spelling Bee",
 		Blurb: "A word appears, then vanishes. Write it down.",
-		Cost:  550,
+		Cost:  18,
 	},
 	{
 		ID:    "codebreaker",
 		Title: "The Code Breaker",
 		Blurb: "A hidden code, and enough clues to work it out.",
-		Cost:  900,
+		Cost:  30,
 	},
 	{
 		ID:    "pseudocode",
 		Title: "Trace the Code",
 		Blurb: "Programs to read. Work out what they print before they tell you.",
-		Cost:  1150,
+		Cost:  38,
 	},
 	{
 		ID:    "files",
 		Title: "Your Own Files",
 		Blurb: "A place to keep things, and a way to look around it.",
-		Cost:  1400,
+		Cost:  47,
 	},
 	{
 		ID:    "quest",
 		Title: "Shell Quest",
 		Blurb: "A pretend command line, with something hidden in it.",
-		Cost:  2000,
+		Cost:  67,
 	},
 	{
 		ID:    "shell",
 		Title: "The Shell",
 		Blurb: "The real command line. Everything Shell Quest taught you, for keeps.",
-		Cost:  3000,
+		Cost:  100,
 	},
 	{
 		ID:    "editor",
 		Title: "The Editor",
 		Blurb: "Write text. Write code. Break things and fix them.",
-		Cost:  4200,
+		Cost:  140,
 	},
 	{
 		ID:    "network",
 		Title: "The Wider World",
 		Blurb: "A browser, and the internet behind it.",
-		Cost:  5600,
+		Cost:  187,
 	},
 	{
 		ID:    "desktop",
 		Title: "The Desktop",
 		Blurb: "Windows, a mouse, a wallpaper of your choosing.",
-		Cost:  7500,
+		Cost:  250,
 	},
 	{
 		ID:    "steam",
 		Title: "Steam",
 		Blurb: "Games, properly. The whole point, really.",
-		Cost:  11000,
+		Cost:  367,
 	},
 }
 

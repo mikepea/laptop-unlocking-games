@@ -129,6 +129,37 @@ func TestLoadShiftsOldMathsProgress(t *testing.T) {
 	}
 }
 
+func TestLoadRescalesOldPoints(t *testing.T) {
+	// Schema 2 points were game score; schema 3 points are minutes, at 30 of
+	// the old to one of the new.
+	path := filepath.Join(t.TempDir(), "profile.json")
+	data := `{"schema_version": 2, "points_earned": 1300, "points_spent": 44, "unlocked": {"arcade": "2026-01-01T00:00:00Z"}}`
+	if err := os.WriteFile(path, []byte(data), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	p, err := NewStore(path).Load("kiddo")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if p.PointsEarned != 43 || p.PointsSpent != 1 {
+		t.Fatalf("earned/spent = %d/%d, want 43/1", p.PointsEarned, p.PointsSpent)
+	}
+	if !p.IsUnlocked("arcade") {
+		t.Fatal("rescaling points took away an unlocked stage")
+	}
+
+	// Saving and loading again must not divide a second time.
+	if err := NewStore(path).Save(p); err != nil {
+		t.Fatal(err)
+	}
+	if p, err = NewStore(path).Load("kiddo"); err != nil {
+		t.Fatal(err)
+	}
+	if p.PointsEarned != 43 {
+		t.Fatalf("points rescaled again on reload: %d, want 43", p.PointsEarned)
+	}
+}
+
 func TestLoadReportsCorruptFile(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "profile.json")
 	if err := os.WriteFile(path, []byte("not json at all"), 0o644); err != nil {

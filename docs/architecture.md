@@ -35,6 +35,13 @@ Three separate ideas, kept separate on purpose:
 them away. `Profile.AwardPoints` silently ignores a negative award so a buggy
 game can never cost a child their progress.
 
+A point is a minute of screen time. Games do not award points directly: each
+reports a `Score` on its own scale, and `launcher.apply` converts it with
+`points.FromScore`, at `points.ScorePerPoint` (30) score to the point, rounded,
+with a passed round always paying at least one. That keeps the exchange rate in
+one place: change the constant and every game moves together. The ladder's
+costs are in points, so a stage's cost is also roughly minutes of play.
+
 **Achievements** are badges. They are one-shot, evaluated after every run
 against the profile *as it stands after that run*, so a rule can look either at
 the run itself (`r.WPM >= 35`) or at running totals (`totalPlays(p) >= 10`).
@@ -114,8 +121,8 @@ earned.
 
 ### Scoring shape
 
-All five games pay on the same curve, so points mean roughly the same thing
-wherever they came from: finishing is the floor, pace adds a **capped** bonus,
+All the games score on the same curve, so a score -- and the points it
+converts to -- means roughly the same thing wherever it came from: finishing is the floor, pace adds a **capped** bonus,
 and accuracy pays only above 80% — guessing fast must never beat working it out.
 Two games deviate deliberately. Spelling has no pace component at all, because
 paying for speed would push toward answering before the word has been read. Code

@@ -131,7 +131,6 @@ func (m *model) result() games.Result {
 		Round:      s.lesson.Title,
 		RoundIndex: m.cursor,
 		Score:      s.score(),
-		Points:     s.score(),
 		Accuracy:   s.accuracy(),
 		WPM:        s.wpm(),
 		Duration:   s.elapsed(),

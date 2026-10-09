@@ -27,14 +27,13 @@ func newTestModel(t *testing.T) (*Model, *profile.Store) {
 	return m, store
 }
 
-func passResult(round string, index, pts int) games.Result {
+func passResult(round string, index, score int) games.Result {
 	return games.Result{
 		GameID:     typing.GameID,
 		Completed:  true,
 		Round:      round,
 		RoundIndex: index,
-		Score:      pts,
-		Points:     pts,
+		Score:      score,
 		Accuracy:   0.95,
 		WPM:        25,
 		Duration:   90 * time.Second,
@@ -70,8 +69,9 @@ func TestApplyRecordsStatsPointsAndProgress(t *testing.T) {
 	if stats.SecondsPlayed != 90 {
 		t.Errorf("SecondsPlayed = %d, want 90", stats.SecondsPlayed)
 	}
-	if m.prof.PointsEarned != 130 {
-		t.Errorf("PointsEarned = %d, want 130", m.prof.PointsEarned)
+	// A score of 130 is four points, at 30 to the point.
+	if m.prof.PointsEarned != 4 {
+		t.Errorf("PointsEarned = %d, want 4", m.prof.PointsEarned)
 	}
 	if m.err != nil {
 		t.Errorf("apply recorded an error: %v", m.err)
@@ -82,8 +82,8 @@ func TestApplyRecordsStatsPointsAndProgress(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
-	if saved.PointsEarned != 130 {
-		t.Fatalf("saved PointsEarned = %d, want 130", saved.PointsEarned)
+	if saved.PointsEarned != 4 {
+		t.Fatalf("saved PointsEarned = %d, want 4", saved.PointsEarned)
 	}
 }
 
@@ -97,8 +97,8 @@ func TestApplyOnlyAdvancesProgressForTheNextLesson(t *testing.T) {
 	if got := m.prof.Stats(typing.GameID).LessonsCleared; got != 1 {
 		t.Fatalf("LessonsCleared = %d after replaying lesson 0, want 1", got)
 	}
-	if m.prof.PointsEarned != 200 {
-		t.Fatalf("PointsEarned = %d, want 200", m.prof.PointsEarned)
+	if m.prof.PointsEarned != 6 {
+		t.Fatalf("PointsEarned = %d, want 6", m.prof.PointsEarned)
 	}
 
 	// Skipping ahead is not possible either: only the next lesson advances it.
@@ -123,8 +123,8 @@ func TestApplyAbandonedRunDoesNotAdvanceProgress(t *testing.T) {
 	if got := m.prof.Stats(typing.GameID).LessonsCleared; got != 0 {
 		t.Fatalf("LessonsCleared = %d after an abandoned run, want 0", got)
 	}
-	if m.prof.PointsEarned != 40 {
-		t.Fatalf("PointsEarned = %d, want the 40 that were earned", m.prof.PointsEarned)
+	if m.prof.PointsEarned != 1 {
+		t.Fatalf("PointsEarned = %d, want the 1 that was earned", m.prof.PointsEarned)
 	}
 }
 
@@ -143,7 +143,7 @@ func TestApplyGrantsAchievementsAndUnlocksStages(t *testing.T) {
 		t.Error("wpm-20 achievement not granted at 25 wpm")
 	}
 	if !m.prof.IsUnlocked("arcade") {
-		t.Error("arcade stage not unlocked at 300 points")
+		t.Error("arcade stage not unlocked at 10 points")
 	}
 
 	var sawArcade bool

@@ -23,8 +23,10 @@ type Result struct {
 	Round      string
 	RoundIndex int
 
+	// Score is the game's own measure of how well the round went. The
+	// launcher turns it into points with points.FromScore; games do not award
+	// points themselves, so the exchange rate lives in one place.
 	Score    int
-	Points   int
 	Accuracy float64 // 0..1
 	Duration time.Duration
 

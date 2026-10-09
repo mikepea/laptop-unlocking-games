@@ -18,7 +18,14 @@ import (
 //
 //	2: Maths Sprint's first five levels (adding, taking away and three
 //	   times-table levels) became one Times Tables level.
-const schemaVersion = 2
+//	3: a point became a minute of screen time, worth 30 of the old points
+//	   (points.ScorePerPoint).
+const schemaVersion = 3
+
+// oldPointsPerPoint is what schema 3 divided existing totals by. It is a copy
+// of points.ScorePerPoint at the time, not a reference to it: changing the
+// exchange rate later must not re-scale a profile that was already migrated.
+const oldPointsPerPoint = 30
 
 // GameStats is the running record for a single game.
 type GameStats struct {
@@ -197,6 +204,12 @@ func migrate(p *Profile) {
 		if s, ok := p.Games["maths"]; ok {
 			s.LessonsCleared = max(0, s.LessonsCleared-4)
 		}
+	}
+	if p.SchemaVersion < 3 {
+		// Totals were in game score; they are now in minutes. Stages already
+		// unlocked stay unlocked whatever the new total rounds to.
+		p.PointsEarned = (p.PointsEarned + oldPointsPerPoint/2) / oldPointsPerPoint
+		p.PointsSpent = (p.PointsSpent + oldPointsPerPoint/2) / oldPointsPerPoint
 	}
 }
 

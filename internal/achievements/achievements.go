@@ -103,11 +103,14 @@ var All = []Achievement{
 		},
 	},
 	{
+		// The ID dates from when this was a thousand points, before a point
+		// became a minute of screen time. It stays so a badge already earned
+		// is still recognised.
 		ID:          "thousandaire",
-		Title:       "Thousandaire",
-		Description: "Earn a thousand points.",
+		Title:       "An Hour's Worth",
+		Description: "Earn sixty points.",
 		Check: func(p *profile.Profile, r games.Result) bool {
-			return p.PointsEarned >= 1000
+			return p.PointsEarned >= 60
 		},
 	},
 

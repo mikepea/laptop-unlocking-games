@@ -107,6 +107,12 @@ like `round.current()` must clamp rather than panic when the index is one past
 the end. There are `finish_test.go` files in `maths` and `pseudocode` guarding
 exactly this — copy them for a new game.
 
+**Games report a score, not points.** A point is a minute of screen time.
+`launcher.apply` converts `games.Result.Score` with `points.FromScore`
+(`points.ScorePerPoint` score to the point); there is no `Points` field on a
+result, so a game cannot pay out on its own scale. The ladder costs are in
+points, so the two move together.
+
 **Points only go up.** `Profile.AwardPoints` ignores non-positive awards by
 design. `unlocks` costs are lifetime `PointsEarned`, not balance, so adding a
 rung to the ladder retroactively grants it to anyone already past its cost —
