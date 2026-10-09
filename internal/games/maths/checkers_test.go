@@ -12,13 +12,9 @@ import (
 // so this map is the list of levels as much as Chapters is.
 var answerCheckers = map[string]checker{
 	// Warm-up: plain sums, so the prompt is the whole question.
-	"Adding Up":                checkExpression,
-	"Taking Away":              checkExpression,
-	"Twos, Fives and Tens":     checkExpression,
-	"Threes, Fours and Sixes":  checkExpression,
-	"Sevens, Eights and Nines": checkExpression,
-	"Sharing Out":              checkExpression,
-	"Everything At Once":       checkExpression,
+	"Times Tables":       checkExpression,
+	"Sharing Out":        checkExpression,
+	"Everything At Once": checkExpression,
 
 	// Chapter 1: still expressions, now with brackets and minus signs.
 	"Clever Adding":       checkExpression,

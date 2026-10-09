@@ -44,6 +44,36 @@ func TestDivisionIsAlwaysExact(t *testing.T) {
 	}
 }
 
+func TestTimesTablesLeanOnTheHardOnes(t *testing.T) {
+	// Every table from 2 to 12 should turn up, and the weighted ones should
+	// make up most of a round. A question counts towards a table if either
+	// operand is it, since the table is put first half the time.
+	tables := levelIn(t, "Warm-Up", "Times Tables")
+	hard := map[int]bool{6: true, 7: true, 11: true, 12: true}
+	r := games.NewTestRand(3)
+	seen := map[int]bool{}
+	hardCount := 0
+	const n = 3000
+	for i := 0; i < n; i++ {
+		q := tables.Gen(r)
+		parts := strings.Fields(q.Prompt)
+		a, _ := strconv.Atoi(parts[0])
+		b, _ := strconv.Atoi(parts[2])
+		seen[a], seen[b] = true, true
+		if hard[a] || hard[b] {
+			hardCount++
+		}
+	}
+	for tbl := 2; tbl <= 12; tbl++ {
+		if !seen[tbl] {
+			t.Errorf("the %d times table never came up", tbl)
+		}
+	}
+	if share := float64(hardCount) / n; share < 0.6 {
+		t.Errorf("hard tables were only %.0f%% of questions, want at least 60%%", share*100)
+	}
+}
+
 // levelIn finds a level by chapter and title, so a test does not depend on
 // where in the curriculum it happens to sit.
 func levelIn(t *testing.T, chapter, title string) Level {

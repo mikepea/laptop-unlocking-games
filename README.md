@@ -11,7 +11,7 @@ Steam on it. Everything above the first rung is hidden until it is reached.
 | game | opens at | teaches |
 | ---- | -------- | ------- |
 | **Typing Trainer** | free | home row through full sentences, with live WPM and accuracy |
-| **Maths Sprint** | 250 | number facts, then the first nine chapters of AoPS Prealgebra: negatives and order of operations, exponents, number theory, fractions, equations, decimals, ratios, percents, square roots |
+| **Maths Sprint** | 250 | times tables (weighted towards 6, 7, 11 and 12) and division, then the first nine chapters of AoPS Prealgebra: negatives and order of operations, exponents, number theory, fractions, equations, decimals, ratios, percents, square roots |
 | **Spelling Bee** | 550 | a sentence appears with one word picked out, both vanish, and the word has to be written from memory |
 | **Code Breaker** | 900 | deduction: crack a hidden code from exact/near feedback |
 | **Trace the Code** | 1150 | read a short program and say what it prints: variables, reassignment, loops, if |

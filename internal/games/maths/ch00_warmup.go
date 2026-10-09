@@ -4,53 +4,19 @@ import "math/rand/v2"
 
 // The warm-up is not in the book. It is the number facts the book assumes you
 // already have, and it stays at the front deliberately -- an easy win to start
-// on is worth more than a tight syllabus.
+// on is worth more than a tight syllabus. Plain adding and taking away were
+// dropped as too easy, and the times tables are one level that leans on the
+// ones that need the practice.
 //
 // Every prompt here is a plain "a op b" sum, which is a promise round_test.go
 // checks.
 var warmUpLevels = []Level{
 	{
-		Title:       "Adding Up",
-		Hint:        "Sums up to 20. Count on from the bigger number.",
-		Questions:   12,
+		Title:       "Times Tables",
+		Hint:        "All of them, but mostly the sixes, sevens, elevens and twelves.",
+		Questions:   15,
 		MinAccuracy: 0.75,
-		Gen: func(r *rand.Rand) Question {
-			a := r.IntN(10) + 1
-			b := r.IntN(10) + 1
-			return Question{Prompt: fmtQ(a, "+", b), Answer: Int(a + b)}
-		},
-	},
-	{
-		Title:       "Taking Away",
-		Hint:        "The answer is never below zero. Count back.",
-		Questions:   12,
-		MinAccuracy: 0.75,
-		Gen: func(r *rand.Rand) Question {
-			a := r.IntN(19) + 2
-			b := r.IntN(a) + 1
-			return Question{Prompt: fmtQ(a, "-", b), Answer: Int(a - b)}
-		},
-	},
-	{
-		Title:       "Twos, Fives and Tens",
-		Hint:        "The friendly times tables. Learn these and the rest follow.",
-		Questions:   12,
-		MinAccuracy: 0.80,
-		Gen:         timesTable(2, 5, 10),
-	},
-	{
-		Title:       "Threes, Fours and Sixes",
-		Hint:        "Six is just double three. Four is double two.",
-		Questions:   12,
-		MinAccuracy: 0.80,
-		Gen:         timesTable(3, 4, 6),
-	},
-	{
-		Title:       "Sevens, Eights and Nines",
-		Hint:        "The hard ones. Nine times a number is ten times it, take one lot away.",
-		Questions:   12,
-		MinAccuracy: 0.75,
-		Gen:         timesTable(7, 8, 9),
+		Gen:         timesTable(tableWeights),
 	},
 	{
 		Title:       "Sharing Out",
@@ -89,12 +55,27 @@ var warmUpLevels = []Level{
 	},
 }
 
-// timesTable returns a generator drawing the second operand from the given
-// tables and the first from 1..12.
-func timesTable(tables ...int) func(*rand.Rand) Question {
+// tableWeights is how often each table is drawn, relative to the others. The
+// sixes, sevens, elevens and twelves come up three times as often as the rest,
+// so they make up about two thirds of a round.
+var tableWeights = map[int]int{
+	2: 1, 3: 1, 4: 1, 5: 1, 6: 3, 7: 3, 8: 1, 9: 1, 10: 1, 11: 3, 12: 3,
+}
+
+// timesTable returns a generator drawing the table from weights and the other
+// operand from 1..12.
+func timesTable(weights map[int]int) func(*rand.Rand) Question {
+	// Expand into a flat pool once, in table order so a seeded rand is
+	// deterministic (map iteration order is not).
+	var pool []int
+	for t := 1; t <= 12; t++ {
+		for range weights[t] {
+			pool = append(pool, t)
+		}
+	}
 	return func(r *rand.Rand) Question {
 		a := r.IntN(12) + 1
-		b := tables[r.IntN(len(tables))]
+		b := pool[r.IntN(len(pool))]
 		// Half the time, put the table first. Knowing 8 x 3 is not the same
 		// skill as knowing 3 x 8 until it is.
 		if r.IntN(2) == 0 {

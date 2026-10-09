@@ -123,9 +123,9 @@ var All = []Achievement{
 	{
 		ID:          "hard-tables",
 		Title:       "The Hard Ones",
-		Description: "Pass the sevens, eights and nines.",
+		Description: "Pass the times tables.",
 		Check: func(p *profile.Profile, r games.Result) bool {
-			return r.Completed && r.GameID == maths.GameID && r.Round == "Sevens, Eights and Nines"
+			return r.Completed && r.GameID == maths.GameID && r.Round == "Times Tables"
 		},
 	},
 	{

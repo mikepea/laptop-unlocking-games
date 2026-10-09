@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -93,6 +94,38 @@ func TestLoadRejectsNewerSchema(t *testing.T) {
 
 	if _, err := NewStore(path).Load("kiddo"); err == nil {
 		t.Fatal("Load accepted a profile from a newer schema")
+	}
+}
+
+func TestLoadShiftsOldMathsProgress(t *testing.T) {
+	// Schema 1 had seven arithmetic levels; five of them became one. Each case
+	// is old levels cleared -> new levels cleared.
+	cases := map[int]int{0: 0, 3: 0, 4: 0, 5: 1, 7: 3, 13: 9}
+	for old, want := range cases {
+		path := filepath.Join(t.TempDir(), "profile.json")
+		data := fmt.Sprintf(`{"schema_version": 1, "games": {"maths": {"lessons_cleared": %d}}}`, old)
+		if err := os.WriteFile(path, []byte(data), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		p, err := NewStore(path).Load("kiddo")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got := p.Stats("maths").LessonsCleared; got != want {
+			t.Errorf("old progress %d migrated to %d, want %d", old, got, want)
+		}
+
+		// Saving and loading again must not shift it a second time.
+		if err := NewStore(path).Save(p); err != nil {
+			t.Fatal(err)
+		}
+		p, err = NewStore(path).Load("kiddo")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got := p.Stats("maths").LessonsCleared; got != want {
+			t.Errorf("old progress %d shifted again on reload: got %d, want %d", old, got, want)
+		}
 	}
 }
 

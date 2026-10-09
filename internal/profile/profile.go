@@ -15,7 +15,10 @@ import (
 )
 
 // schemaVersion is bumped whenever the on-disk shape changes incompatibly.
-const schemaVersion = 1
+//
+//	2: Maths Sprint's first five levels (adding, taking away and three
+//	   times-table levels) became one Times Tables level.
+const schemaVersion = 2
 
 // GameStats is the running record for a single game.
 type GameStats struct {
@@ -179,8 +182,22 @@ func (s *Store) Load(name string) (*Profile, error) {
 	if p.Name == "" {
 		p.Name = name
 	}
+	migrate(&p)
 	p.SchemaVersion = schemaVersion
 	return &p, nil
+}
+
+// migrate brings a profile written by an older schema up to date.
+func migrate(p *Profile) {
+	if p.SchemaVersion < 2 {
+		// Maths levels are cleared by count, and five old levels became one,
+		// so the count shifts down by four. Clearing all five old levels is
+		// what counts as having cleared the new one. The game ID is spelled
+		// out because profile cannot import the games.
+		if s, ok := p.Games["maths"]; ok {
+			s.LessonsCleared = max(0, s.LessonsCleared-4)
+		}
+	}
 }
 
 // Save writes the profile atomically, so a power cut mid-write cannot leave a
