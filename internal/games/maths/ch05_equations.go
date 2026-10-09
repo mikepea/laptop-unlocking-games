@@ -42,7 +42,7 @@ var equationLevels = []Level{
 	{
 		Title:       "Missing Number",
 		Hint:        "The same sums as before, with a hole in them. What fills it?",
-		Questions:   12,
+		Questions:   8,
 		MinAccuracy: 0.75,
 		Gen: func(r *rand.Rand) Question {
 			// Addition and subtraction only, and the missing number moves
@@ -63,7 +63,7 @@ var equationLevels = []Level{
 	{
 		Title:       "One Step",
 		Hint:        "x is just the missing number wearing a letter. Undo what was done to it.",
-		Questions:   12,
+		Questions:   8,
 		MinAccuracy: 0.75,
 		Gen: func(r *rand.Rand) Question {
 			x := r.IntN(12) + 1
@@ -89,7 +89,7 @@ var equationLevels = []Level{
 	{
 		Title:       "Two Steps",
 		Hint:        "Take the loose number off first, then undo the times.",
-		Questions:   10,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			x := r.IntN(10) + 1
@@ -113,7 +113,7 @@ var equationLevels = []Level{
 	{
 		Title:       "Putting Numbers In",
 		Hint:        "You are told what x is. Swap it in and work it out.",
-		Questions:   12,
+		Questions:   8,
 		MinAccuracy: 0.75,
 		Gen: func(r *rand.Rand) Question {
 			x := r.IntN(9) + 2
@@ -136,7 +136,7 @@ var equationLevels = []Level{
 	{
 		Title:       "Collecting Up",
 		Hint:        "Add up the xs. They are all the same thing, so they go together.",
-		Questions:   12,
+		Questions:   8,
 		MinAccuracy: 0.75,
 		Gen: func(r *rand.Rand) Question {
 			a := r.IntN(8) + 1
@@ -158,7 +158,7 @@ var equationLevels = []Level{
 	{
 		Title:       "Letters on Both Sides",
 		Hint:        "Get all the xs onto one side first. Take the smaller lot off both sides.",
-		Questions:   10,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			x := r.IntN(9) + 1
@@ -179,7 +179,7 @@ var equationLevels = []Level{
 	{
 		Title:       "Inequalities",
 		Hint:        "Solve it as if it were an equals sign, then ask which whole numbers actually fit.",
-		Questions:   10,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			a := r.IntN(6) + 2 // 2..7

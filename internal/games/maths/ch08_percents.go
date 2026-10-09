@@ -21,7 +21,7 @@ var percentLevels = []Level{
 	{
 		Title:       "Percent of a Number",
 		Hint:        "Ten percent is a tenth. Build the rest out of tenths and halves of them.",
-		Questions:   12,
+		Questions:   8,
 		MinAccuracy: 0.75,
 		Gen: func(r *rand.Rand) Question {
 			pct := wholePercent(r)
@@ -37,7 +37,7 @@ var percentLevels = []Level{
 	{
 		Title:       "Percents, Decimals and Fractions",
 		Hint:        "Percent means out of a hundred. That is all it means.",
-		Questions:   12,
+		Questions:   8,
 		MinAccuracy: 0.75,
 		Gen: func(r *rand.Rand) Question {
 			pct := wholePercent(r)
@@ -67,7 +67,7 @@ var percentLevels = []Level{
 	{
 		Title:       "Up and Down by a Percent",
 		Hint:        "Work out the change first, then add it on or take it off.",
-		Questions:   10,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			n := (r.IntN(10) + 1) * 20
@@ -90,7 +90,7 @@ var percentLevels = []Level{
 	{
 		Title:       "Finding the Whole",
 		Hint:        "You are told the part. Work out one percent, then all hundred of them.",
-		Questions:   10,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			whole := (r.IntN(10) + 1) * 20
@@ -105,7 +105,7 @@ var percentLevels = []Level{
 	{
 		Title:       "How Much Did It Change",
 		Hint:        "The change goes over what it started at, not what it ended at.",
-		Questions:   10,
+		Questions:   8,
 		MinAccuracy: 0.65,
 		Gen: func(r *rand.Rand) Question {
 			from := (r.IntN(10) + 1) * 20

@@ -24,7 +24,7 @@ var rootLevels = []Level{
 	{
 		Title:       "Perfect Squares",
 		Hint:        "What times itself makes this? Learn the table up to 15 and most of it is sight-reading.",
-		Questions:   12,
+		Questions:   8,
 		MinAccuracy: 0.75,
 		Gen: func(r *rand.Rand) Question {
 			n := r.IntN(len(squares)-1) + 2 // 2..15; sqrt(1) is not a question
@@ -37,7 +37,7 @@ var rootLevels = []Level{
 	{
 		Title:       "Roots Between Whole Numbers",
 		Hint:        "Find the square just below it and the square just above.",
-		Questions:   10,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			// Strictly between two consecutive squares, so there is a whole
@@ -60,7 +60,7 @@ var rootLevels = []Level{
 	{
 		Title:       "Multiplying Roots",
 		Hint:        "sqrt(a) times sqrt(b) is sqrt(a times b). Multiply inside, then take the root.",
-		Questions:   12,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			// Built backwards from the answer: split its square into the two
@@ -87,7 +87,7 @@ var rootLevels = []Level{
 	{
 		Title:       "Tidying Roots Up",
 		Hint:        "Pull out the biggest square you can find. What is left stays under the root.",
-		Questions:   9,
+		Questions:   8,
 		MinAccuracy: 0.65,
 		GenSteps:    simplifyRootSteps,
 	},

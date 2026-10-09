@@ -47,7 +47,7 @@ var fractionLevels = []Level{
 	{
 		Title:       "Equivalent Fractions",
 		Hint:        "Times the top and the bottom by the same thing and the fraction is unchanged.",
-		Questions:   12,
+		Questions:   8,
 		MinAccuracy: 0.75,
 		Gen: func(r *rand.Rand) Question {
 			n, d := properFraction(r)
@@ -67,7 +67,7 @@ var fractionLevels = []Level{
 	{
 		Title:       "Simplest Form",
 		Hint:        "Cancel until nothing goes into the top and the bottom but 1.",
-		Questions:   12,
+		Questions:   8,
 		MinAccuracy: 0.75,
 		Gen: func(r *rand.Rand) Question {
 			n, d := properFraction(r)
@@ -83,7 +83,7 @@ var fractionLevels = []Level{
 	{
 		Title:       "Adding Fractions",
 		Hint:        "Same bottom number first, then add the tops. Top-heavy answers are fine.",
-		Questions:   10,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			n1, d1 := properFraction(r)
@@ -97,7 +97,7 @@ var fractionLevels = []Level{
 	{
 		Title:       "Taking Fractions Away",
 		Hint:        "Same bottom number again. The answer is never below zero, and always in simplest form.",
-		Questions:   10,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			var n1, d1, n2, d2 int
@@ -123,7 +123,7 @@ var fractionLevels = []Level{
 	{
 		Title:       "Multiplying Fractions",
 		Hint:        "Tops together, bottoms together, then cancel down. Answer in simplest form.",
-		Questions:   12,
+		Questions:   8,
 		MinAccuracy: 0.75,
 		Gen: func(r *rand.Rand) Question {
 			n1, d1 := properFraction(r)
@@ -146,7 +146,7 @@ var fractionLevels = []Level{
 	{
 		Title:       "Dividing Fractions",
 		Hint:        "Turn the second one upside down and multiply. Answer in simplest form.",
-		Questions:   10,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			n1, d1 := properFraction(r)
@@ -162,7 +162,7 @@ var fractionLevels = []Level{
 	{
 		Title:       "Mixed Numbers",
 		Hint:        "Whole ones times the bottom, add the top. Or the other way round. Simplest form.",
-		Questions:   12,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			whole := r.IntN(5) + 1
@@ -185,7 +185,7 @@ var fractionLevels = []Level{
 	{
 		Title:       "Which Is Bigger",
 		Hint:        "Put them over the same bottom number, then look at the tops. Type the bigger one.",
-		Questions:   10,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			var n1, d1, n2, d2 int

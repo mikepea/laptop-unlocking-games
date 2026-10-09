@@ -14,14 +14,14 @@ var warmUpLevels = []Level{
 	{
 		Title:       "Times Tables",
 		Hint:        "All of them, but mostly the sixes, sevens, elevens and twelves.",
-		Questions:   15,
+		Questions:   8,
 		MinAccuracy: 0.75,
 		Gen:         timesTable(tableWeights),
 	},
 	{
 		Title:       "Sharing Out",
 		Hint:        "Division. Ask yourself what times what makes the big number.",
-		Questions:   12,
+		Questions:   8,
 		MinAccuracy: 0.75,
 		Gen: func(r *rand.Rand) Question {
 			b := r.IntN(9) + 2  // 2..10, never divide by one
@@ -32,7 +32,7 @@ var warmUpLevels = []Level{
 	{
 		Title:       "Everything At Once",
 		Hint:        "All four, mixed up. Read each one carefully.",
-		Questions:   15,
+		Questions:   8,
 		MinAccuracy: 0.75,
 		Gen: func(r *rand.Rand) Question {
 			switch r.IntN(4) {

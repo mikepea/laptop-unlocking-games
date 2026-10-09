@@ -29,7 +29,7 @@ var propertiesLevels = []Level{
 	{
 		Title:       "Clever Adding",
 		Hint:        "Add them in any order you like. Look for two that make a ten.",
-		Questions:   10,
+		Questions:   8,
 		MinAccuracy: 0.75,
 		Gen: func(r *rand.Rand) Question {
 			// Two of the three terms end in digits that make ten, so the sum
@@ -48,7 +48,7 @@ var propertiesLevels = []Level{
 	{
 		Title:       "Clever Multiplying",
 		Hint:        "Multiply them in any order you like. Find the pair that makes a hundred.",
-		Questions:   10,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			// Same trick, one operation up: a pair that makes a round number,
@@ -65,14 +65,14 @@ var propertiesLevels = []Level{
 	{
 		Title:       "Breaking Numbers Up",
 		Hint:        "The distributive property. Split the awkward number, do both halves, put them back.",
-		Questions:   9,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		GenSteps:    distributiveSteps,
 	},
 	{
 		Title:       "Below Zero",
 		Hint:        "Adding a negative goes down. Taking one away goes up.",
-		Questions:   12,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			a := r.IntN(12) + 1
@@ -92,7 +92,7 @@ var propertiesLevels = []Level{
 	{
 		Title:       "Signs That Multiply",
 		Hint:        "Two minus signs cancel each other out. One on its own does not.",
-		Questions:   12,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			a := r.IntN(9) + 2
@@ -122,7 +122,7 @@ var propertiesLevels = []Level{
 	{
 		Title:       "Order of Operations",
 		Hint:        "Brackets first, then times and divide, then plus and minus.",
-		Questions:   12,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			a := r.IntN(9) + 2

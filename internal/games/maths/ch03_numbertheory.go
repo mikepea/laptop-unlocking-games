@@ -51,7 +51,7 @@ var numberTheoryLevels = []Level{
 	{
 		Title:       "Multiples",
 		Hint:        "The multiples of 7 are 7, 14, 21 and on. Count in sevens.",
-		Questions:   10,
+		Questions:   8,
 		MinAccuracy: 0.75,
 		Gen: func(r *rand.Rand) Question {
 			n := r.IntN(10) + 3 // 3..12
@@ -81,14 +81,14 @@ var numberTheoryLevels = []Level{
 	{
 		Title:       "Divisibility Tests",
 		Hint:        "Add the digits up. What that leaves over dividing by 3 or 9, the number leaves too.",
-		Questions:   10,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		GenSteps:    divisibilitySteps,
 	},
 	{
 		Title:       "Primes",
 		Hint:        "A prime has no divisors but itself and 1. Check 2, 3, 5, 7 and stop when they square past it.",
-		Questions:   10,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			switch r.IntN(3) {
@@ -133,14 +133,14 @@ var numberTheoryLevels = []Level{
 	{
 		Title:       "Prime Factorisation",
 		Hint:        "Split it until every piece is prime. A prime that is not in there at all appears nought times.",
-		Questions:   9,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		GenSteps:    factorisationSteps,
 	},
 	{
 		Title:       "Counting Divisors",
 		Hint:        "Add one to each power and multiply those together. 2^3 x 3^2 has 4 x 3 divisors.",
-		Questions:   10,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			e2, e3 := r.IntN(4)+1, r.IntN(3)+1
@@ -155,7 +155,7 @@ var numberTheoryLevels = []Level{
 	{
 		Title:       "Biggest Common Factor",
 		Hint:        "What goes into both? Take the primes they share.",
-		Questions:   10,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			// Built from a shared factor and two coprime halves, so the
@@ -177,7 +177,7 @@ var numberTheoryLevels = []Level{
 	{
 		Title:       "Smallest Common Multiple",
 		Hint:        "Count up in both until they land on the same number.",
-		Questions:   10,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			// Two different numbers: "both 8 and 8" is not a question.

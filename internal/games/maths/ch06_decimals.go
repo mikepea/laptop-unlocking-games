@@ -66,7 +66,7 @@ var decimalLevels = []Level{
 	{
 		Title:       "Place Value",
 		Hint:        "After the point come tenths, then hundredths, then thousandths.",
-		Questions:   12,
+		Questions:   8,
 		MinAccuracy: 0.75,
 		Gen: func(r *rand.Rand) Question {
 			d := randDec(r, 90, 3)
@@ -102,7 +102,7 @@ var decimalLevels = []Level{
 	{
 		Title:       "Adding Decimals",
 		Hint:        "Line the points up under each other. Pad the short one with noughts.",
-		Questions:   12,
+		Questions:   8,
 		MinAccuracy: 0.75,
 		Gen: func(r *rand.Rand) Question {
 			p1, p2 := r.IntN(2)+1, r.IntN(2)+1
@@ -128,7 +128,7 @@ var decimalLevels = []Level{
 	{
 		Title:       "Multiplying Decimals",
 		Hint:        "Ignore the points, multiply, then put back as many places as you took out.",
-		Questions:   12,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			a := randDecNotWhole(r, 6, r.IntN(2)+1)
@@ -152,7 +152,7 @@ var decimalLevels = []Level{
 	{
 		Title:       "Dividing Decimals",
 		Hint:        "Move both points the same way until you are dividing by a whole number.",
-		Questions:   10,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			// Built from the answer outwards, so it always comes out exactly
@@ -179,7 +179,7 @@ var decimalLevels = []Level{
 	{
 		Title:       "Swapping Forms",
 		Hint:        "A decimal is a fraction over ten, a hundred or a thousand. Cancel it down.",
-		Questions:   12,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			den := terminatingDenominators[r.IntN(len(terminatingDenominators))]
@@ -204,7 +204,7 @@ var decimalLevels = []Level{
 	{
 		Title:       "Rounding",
 		Hint:        "Look at the next digit along. Five or more rounds up.",
-		Questions:   12,
+		Questions:   8,
 		MinAccuracy: 0.75,
 		Gen: func(r *rand.Rand) Question {
 			to := r.IntN(2) + 1 // round to one or two places

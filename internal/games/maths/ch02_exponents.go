@@ -28,7 +28,7 @@ var exponentLevels = []Level{
 	{
 		Title:       "Powers",
 		Hint:        "2^5 means five 2s multiplied together. Not 2 times 5.",
-		Questions:   12,
+		Questions:   8,
 		MinAccuracy: 0.75,
 		Gen: func(r *rand.Rand) Question {
 			p := safePowers[r.IntN(len(safePowers))]
@@ -39,7 +39,7 @@ var exponentLevels = []Level{
 	{
 		Title:       "Multiplying Powers",
 		Hint:        "Same base: write both out in full and count. The powers add.",
-		Questions:   12,
+		Questions:   8,
 		MinAccuracy: 0.75,
 		Gen: func(r *rand.Rand) Question {
 			base := r.IntN(8) + 2
@@ -59,7 +59,7 @@ var exponentLevels = []Level{
 	{
 		Title:       "Dividing Powers",
 		Hint:        "Same base again. The powers take away.",
-		Questions:   12,
+		Questions:   8,
 		MinAccuracy: 0.75,
 		Gen: func(r *rand.Rand) Question {
 			base := r.IntN(8) + 2
@@ -74,7 +74,7 @@ var exponentLevels = []Level{
 	{
 		Title:       "Powers of Powers",
 		Hint:        "(2^3)^4 is four lots of three 2s. The powers multiply.",
-		Questions:   12,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			base := r.IntN(8) + 2
@@ -98,7 +98,7 @@ var exponentLevels = []Level{
 	{
 		Title:       "Zero and Below",
 		Hint:        "Anything to the power nought is 1. A negative power is one over the power.",
-		Questions:   12,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			base := r.IntN(8) + 2

@@ -39,7 +39,7 @@ var ratioLevels = []Level{
 	{
 		Title:       "Ratios",
 		Hint:        "Add the parts of the ratio up. That many shares, then count out each one.",
-		Questions:   10,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			// Coprime parts, so the ratio on screen is already in its
@@ -80,7 +80,7 @@ var ratioLevels = []Level{
 	{
 		Title:       "Scaling Up",
 		Hint:        "Work out what one of them costs or takes, then multiply.",
-		Questions:   10,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			each := r.IntN(18) + 3 // 3..20
@@ -109,7 +109,7 @@ var ratioLevels = []Level{
 	{
 		Title:       "Changing Units",
 		Hint:        "Going to the smaller unit, multiply. Going to the bigger one, divide.",
-		Questions:   12,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			c := conversions[r.IntN(len(conversions))]
@@ -130,7 +130,7 @@ var ratioLevels = []Level{
 	{
 		Title:       "Rates",
 		Hint:        "How much for one? Divide the total by how many there were.",
-		Questions:   10,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		Gen: func(r *rand.Rand) Question {
 			each := r.IntN(20) + 2
@@ -161,7 +161,7 @@ var ratioLevels = []Level{
 	{
 		Title:       "Speed, Distance and Time",
 		Hint:        "Speed is distance over time. Rearrange it for whichever one is missing.",
-		Questions:   9,
+		Questions:   8,
 		MinAccuracy: 0.70,
 		GenSteps:    speedSteps,
 	},
